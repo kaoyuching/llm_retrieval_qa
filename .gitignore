@@ -8,3 +8,4 @@
 *.jpg
 test/*.pkl
 build/*
+example_files/*
