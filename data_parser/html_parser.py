@@ -79,11 +79,12 @@ def replace_strings(element, pattern):
 
 
 class DataFromUrl():
-    def __init__(self, url: str, encoding: str = 'utf8'):
+    def __init__(self, url: str, encoding: str = 'utf8', filter_tags: Optional[List[str]] = None):
         self.encoding = encoding
         self.resp = requests.get(url)
         self.text = self.resp.content.decode(self.encoding)
         self.soup = bs4.BeautifulSoup(self.text, features="html.parser")
+        self.filter_tags = filter_tags
 
     def get_data(
         self,
@@ -94,16 +95,13 @@ class DataFromUrl():
         save_filename: Optional[str] = None, 
     ):
         html_list = []
-        for item in self.soup.find_all():
+        for item in self.soup.find_all(self.filter_tags):
             _ = modify_tags(
                 item,
-                replace_tags={'div.p': 'p', 'div.abstract': 'p'},
+                replace_tags=replace_tags,
                 decompose_tags=decompose_tags,
-                preserve_tags=[
-                    'table', 'a', 'p', 'th', 'tr', 'td', 'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-                    'h1', 'h2', 'h3', 'h4', 'h5', 'img', 'kdb', 'pre',
-                ],
-                preserve_attrs=['href', 'src', 'id'],
+                preserve_tags=preserve_tags,
+                preserve_attrs=preserve_attrs,
             )
 
             body_contents = ''.join([str(x) for x in item.contents])
@@ -178,7 +176,7 @@ if __name__ == "__main__":
 
     data_config = data_parse_config['html']
 
-    data_from_url = DataFromUrl(url, encoding='utf8')
+    data_from_url = DataFromUrl(url, encoding='utf8', filter_tags=data_config["filter_tags"])
     html_list, image_src = data_from_url.get_data(
         replace_tags=data_config["replace_tags"],
         decompose_tags=data_config["decompose_tags"],
