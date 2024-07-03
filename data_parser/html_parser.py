@@ -35,6 +35,7 @@ def modify_tags(
         - replace_tags: {rule: new_tag_name}
         - decompose_tags: tags want to remove
         - preserve_tags: tags want to preserve
+        - preserve_attrs: attrs want to preserve
     '''
     # replace tags with given rule
     if replace_tags and len(replace_tags) > 0:
@@ -79,6 +80,11 @@ def replace_strings(element, pattern):
 
 
 class DataFromUrl():
+    r"""
+        - url: where to crawl data
+        - encoding: data encoding
+        - filter_tags: filter data with given tags
+    """
     def __init__(self, url: str, encoding: str = 'utf8', filter_tags: Optional[List[str]] = None):
         self.encoding = encoding
         self.resp = requests.get(url)
