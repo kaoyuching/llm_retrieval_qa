@@ -27,9 +27,11 @@ class QAChain():
 
         doc_str = []
         contexts = []
+        scores = []
         for _doc, _score in query_docs:
             doc_str.append(_doc)
             contexts.append(_doc.page_content)
+            scores.append(_score)
         contexts = '\n'.join(contexts)
         input_prompt = self.prompt_template.format(context=contexts, question=question)
 
