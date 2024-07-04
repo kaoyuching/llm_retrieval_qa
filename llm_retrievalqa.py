@@ -32,8 +32,7 @@ llama3: https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3/
 
 
 filename = './example_files/nvidia_doc.html'
-# filename = '../sql_alchemy_doc.html'
-# filename = '../sql_alchemy_doc_all.html'
+# filename = './example_files/sql_alchemy_doc_all.html'
 # filename = './example_files/germany_beginner.html'
 with open(filename, 'r', encoding='utf-8') as f:
     html_doc = f.read()
@@ -140,83 +139,11 @@ If you don't know the answer, just say that you don't know, don't try to make up
 instruction = """context: {context}
 question: {question}"""
 
-# system = """You are a helpful, respectful and honest assistant.
-# You serve as a assistant specialized in answering questions.
-# Always answer as helpfully as possible using the context text provided.
-# Your answers should only answer the question once and not have any text after the answer is done.
-# Your answers do not include system prompt.
-# If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct.
-# If you don't know the answer to a question, please don't share false information.
-# If the context is not directly related to the question, please say you don't know the answer."""
-
-# instruction = """Context: {context}
-# Question: {question}
-# Only return the helpful answer below and nothing else.
-# Helpful answer:"""
-
-
-# system = """You are a helpful, respectful and honest assistant.
-# You serve as a assistant specialized in answering questions.
-# Always answer as helpfully as possible using the context text provided.
-# Your answers should only answer the question once and not have any text after the answer is done.
-# If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct.
-# If you don't know the answer to a question, please don't share false information.
-# No potential connection and no guessing.
-# Answer the question according to the given context."""
-
-
-
-
-# system = """You are a helpful, respectful and honest assistant.
-# Always answer the user's queston with the following context.
-# You should only answer the question once and do not have any text after the answer is done.
-# If you don't know the answer, just answer you don't know and do not try to generate any answers.
-# No potential connection and no guessing."""
-
-
-# instruction = """CONTEXT:\n {context}\n\nQuestion:\n{question}"""
-# instruction = """Context: {context}
-# Question: {question}
-# Only return the helpful answer below and nothing else.
-# Helpful answer:"""
-
-# system = """You are a helpful, respectful and honest assistant."""
-# instruction = """Please refer to the description below:\n{context}\n Firstly, please answer whether the question is directly related to the description that I provide above. Secondly, answer the question based on the description that I provided above. No potential connection and no guessing. If the question is not directly related to the description, you should answer not found. The question is {question}."""
 
 
 llama_prompt.set_system_prompt(system_prompt=system)
 prompt_template_fn, full_prompt = llama_prompt.get_template(instruction)
 print(full_prompt)
-
-# system_prompt = B_SYS + system + E_SYS
-# prompt_template = B_INST + ' ' + system_prompt + instruction + ' ' + E_INST
-
-# prompt_template = """
-    # [INST] <<SYS>>
-    # You are a helpful, respectful and honest assistant.
-    # You serve as a assistant specialized in answering questions.
-    # Always answer as helpfully as possible using the context text provided.
-    # Your answers should only answer the question once and not have any text after the answer is done.
-    # If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct.
-    # If you don't know the answer to a question, please don't share false information.
-    # No potential connection and no guessing.
-    # <</SYS>>
-
-    # Please answer the {question} according to {context}[/INST]
-# """
-
-# prompt_template_fn = PromptTemplate(
-    # input_variables=["context", "question"],
-    # template=prompt_template,
-# )
-
-# qa_chain = RetrievalQA.from_chain_type(
-    # llm=llm,
-    # chain_type="stuff",
-    # retriever=retriever,
-    # return_source_documents=True,
-    # chain_type_kwargs={"prompt": prompt_template_fn}
-# )
 
 from utils import QAChain
 
