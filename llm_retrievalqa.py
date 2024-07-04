@@ -31,9 +31,10 @@ llama3: https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3/
 '''
 
 
-# filename = '../nvidia_doc_v2.html'
+filename = './example_files/nvidia_doc.html'
 # filename = '../sql_alchemy_doc.html'
-filename = '../sql_alchemy_doc_all.html'
+# filename = '../sql_alchemy_doc_all.html'
+# filename = './example_files/germany_beginner.html'
 with open(filename, 'r', encoding='utf-8') as f:
     html_doc = f.read()
 
@@ -87,8 +88,8 @@ retriever = faiss_db.as_retriever(
 
 # llm model
 # llm_model_name = "yentinglin/Taiwan-LLM-7B-v2.1-chat"
-llm_model_name = "../models/llama2-7b-chat"
-# llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
+# llm_model_name = "../models/llama2-7b-chat"
+llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
 
 model = AutoModelForCausalLM.from_pretrained(
@@ -108,9 +109,9 @@ hf_pipeline = pipeline(
     num_return_sequences=1,
     eos_token_id=tokenizer.eos_token_id,
     pad_token_id=tokenizer.eos_token_id,
-    temperature=0.01,  # 0.7 #TODO: temperature < 0.1
-    # do_sample=True,  # False if temperature is 0
-    top_p=0.9,
+    # temperature=0.0,  # 0.7 #TODO: temperature < 0.1
+    do_sample=False,  # False if temperature is 0
+    # top_p=0.9,
     repetition_penalty=1.1,
     return_full_text=False,
     # truncation=True,
@@ -121,27 +122,68 @@ llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
 
 # prompt
-llama_prompt = PromptLlama2()
-# llama_prompt = PromptLlama3()
+# llama_prompt = PromptLlama2()
+llama_prompt = PromptLlama3()
 
-system = """You are a helpful, respectful and honest assistant.
-You serve as a assistant specialized in answering questions.
-Always answer as helpfully as possible using the context text provided.
-Your answers should only answer the question once and not have any text after the answer is done.
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct.
-If you don't know the answer to a question, please don't share false information.
-No potential connection and no guessing.
-Answer the question according to the given context."""
+# llama3
+# system = """Use the following context to answer the user's question.
+# If you don't know the answer or the question is not directly related to the conext, you should answer you don't know and don't generate any answers."""
 
-# instruction = """Please answer the {question} according to {context}"""
-instruction = """CONTEXT:\n {context}\n\nQuestion:\n{question}"""
+# instruction = """Please answer the {question} directly according to the context: {context}"""
+
+
+# llama2
+system = """You serve as a assistant specialized in answering questions according to the given context.
+Use the following pieces of information to answer the user's question.
+If you don't know the answer, just say that you don't know, don't try to make up any answers."""
+
+instruction = """context: {context}
+question: {question}"""
+
+# system = """You are a helpful, respectful and honest assistant.
+# You serve as a assistant specialized in answering questions.
+# Always answer as helpfully as possible using the context text provided.
+# Your answers should only answer the question once and not have any text after the answer is done.
+# Your answers do not include system prompt.
+# If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct.
+# If you don't know the answer to a question, please don't share false information.
+# If the context is not directly related to the question, please say you don't know the answer."""
+
+# instruction = """Context: {context}
+# Question: {question}
+# Only return the helpful answer below and nothing else.
+# Helpful answer:"""
+
+
+# system = """You are a helpful, respectful and honest assistant.
+# You serve as a assistant specialized in answering questions.
+# Always answer as helpfully as possible using the context text provided.
+# Your answers should only answer the question once and not have any text after the answer is done.
+# If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct.
+# If you don't know the answer to a question, please don't share false information.
+# No potential connection and no guessing.
+# Answer the question according to the given context."""
+
+
+
+
+# system = """You are a helpful, respectful and honest assistant.
+# Always answer the user's queston with the following context.
+# You should only answer the question once and do not have any text after the answer is done.
+# If you don't know the answer, just answer you don't know and do not try to generate any answers.
+# No potential connection and no guessing."""
+
+
+# instruction = """CONTEXT:\n {context}\n\nQuestion:\n{question}"""
+# instruction = """Context: {context}
+# Question: {question}
+# Only return the helpful answer below and nothing else.
+# Helpful answer:"""
 
 # system = """You are a helpful, respectful and honest assistant."""
 # instruction = """Please refer to the description below:\n{context}\n Firstly, please answer whether the question is directly related to the description that I provide above. Secondly, answer the question based on the description that I provided above. No potential connection and no guessing. If the question is not directly related to the description, you should answer not found. The question is {question}."""
 
 
-# llama2_prompt.set_system_prompt(system_prompt=system)
-# prompt_template_fn, full_prompt = llama2_prompt.get_template(instruction)
 llama_prompt.set_system_prompt(system_prompt=system)
 prompt_template_fn, full_prompt = llama_prompt.get_template(instruction)
 print(full_prompt)
@@ -182,57 +224,61 @@ qa_chain = QAChain(llm, faiss_db, prompt_template_fn, top_k=10, return_source_do
 
 
 print("=================start=====================")
-res = qa_chain("How to use and_?")
+res = qa_chain("How to say 'thank you' in germany?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
 print("=================")
 
-res = qa_chain("How to use colume?")
+res = qa_chain("Can you introduce some german food?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
 print("=================")
 
-r'''
+res = qa_chain("How to use and_ in SQLAlchemy?")
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("---------------------")
+print(f"docs: {res['source_documents']}")
+print("=================")
+
+res = qa_chain("How to use colume with SQLAlchemy?")
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("---------------------")
+print(f"docs: {res['source_documents']}")
+print("=================")
+
 res = qa_chain("What is the compute capability?")
-# print(f"Question: {res['query']}, \nAnswer: {res['result'].split('ASSISTANT:')[-1]}")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("What is TensorRT?")
-# print(f"Question: {res['query']}, \nAnswer: {res['result'].split('ASSISTANT:')[-1]}")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("Can you explain what is TensorRT?")
-# print(f"Question: {res['query']}, \nAnswer: {res['result'].split('ASSISTANT:')[-1]}")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("How to bulid TensorRT engine?")
-# print(f"Question: {res['query']}, \nAnswer: {res['result'].split('ASSISTANT:')[-1]}")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("How to bulid TensorRT engine with python?")
-# print(f"Question: {res['query']}\nAnswer: {res['result'].split('ASSISTANT:')[-1]}")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("How to bulid TensorRT engine with python from onnx model?")
-# print(f"Question: {res['query']}\nAnswer: {res['result'].split('ASSISTANT:')[-1]}")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
 print(f"docs: {res['source_documents']}")
-'''
