@@ -147,7 +147,7 @@ print(full_prompt)
 
 from utils import QAChain
 
-qa_chain = QAChain(llm, faiss_db, prompt_template_fn, top_k=10, return_source_documents=True)
+qa_chain = QAChain(llm, faiss_db, prompt_template_fn, top_k=10, return_source_documents=True, similarity_score_threshold=None)
 
 
 print("=================start=====================")
