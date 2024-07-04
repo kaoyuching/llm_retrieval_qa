@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 import bs4
 import numpy as np
 from PIL import Image
+from cairosvg import svg2png
 
 
 def remove_attrs(soup, preserve_attrs: Optional[List] = None):
@@ -152,9 +153,14 @@ class DataFromUrl():
                 if _content.name == 'img':
                     img_src = _content.attrs['src']
                     img_url = urljoin(url, img_src)
+                    _, ext = os.path.splitext(img_url)
 
                     response = requests.get(img_url)
-                    img = Image.open(BytesIO(response.content))
+                    if ext.lower() == '.svg':
+                        bytestring = svg2png(bytestring=response.content)
+                    else:
+                        bytestring = response.content
+                    img = Image.open(BytesIO(bytestring))
                     image_src[img_src] = img
             new_html_list.append(str(soup))
         return new_html_list, image_src
