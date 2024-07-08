@@ -87,8 +87,8 @@ retriever = faiss_db.as_retriever(
 
 # llm model
 # llm_model_name = "yentinglin/Taiwan-LLM-7B-v2.1-chat"
-# llm_model_name = "../models/llama2-7b-chat"
-llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
+llm_model_name = "../models/llama2-7b-chat"
+# llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
 
 model = AutoModelForCausalLM.from_pretrained(
@@ -121,24 +121,23 @@ llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
 
 # prompt
-# llama_prompt = PromptLlama2()
-llama_prompt = PromptLlama3()
+llama_prompt = PromptLlama2()
+# llama_prompt = PromptLlama3()
 
 # llama3
 # system = """Use the following context to answer the user's question.
-# If you don't know the answer or the question is not directly related to the conext, you should answer you don't know and don't generate any answers."""
+# If you don't know the answer or the question is not directly related to the context, you should answer you don't know and don't generate any answers."""
 
 # instruction = """Please answer the {question} directly according to the context: {context}"""
 
 
 # llama2
-system = """You serve as a assistant specialized in answering questions according to the given context.
-Use the following pieces of information to answer the user's question.
-If you don't know the answer, just say that you don't know, don't try to make up any answers."""
+system = """You serve as a assistant specialized in answering questions with the given context.
+If the following context is not directly related to the question, you must say that you don't know.
+Don't try to make up any answers. No potential connection and no guessing."""
 
-instruction = """context: {context}
-question: {question}"""
-
+instruction = """Base on the following context: {context}, please answer {question}.
+If the question is not directly related to the description, you should answer you don't know."""
 
 
 llama_prompt.set_system_prompt(system_prompt=system)
