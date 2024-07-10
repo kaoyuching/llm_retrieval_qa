@@ -14,7 +14,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 
 import torch
-from transformers import AutoTokenizer, TextStreamer, pipeline, GPTQConfig
+from transformers import AutoTokenizer, TextStreamer, pipeline
+from transformers import GPTQConfig, BitsAndBytesConfig, QuantoConfig
 
 # version: write with transformers generation
 # https://huggingface.co/docs/transformers/model_doc/auto#transformers.AutoModelForCausalLM
@@ -62,11 +63,10 @@ text_splitter = RecursiveCharacterTextSplitter(
 splits = text_splitter.split_documents(html_header_splits)
 
 
-# model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+# model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 model_name = "GanymedeNil/text2vec-large-chinese"
 hf_embeddings = HuggingFaceEmbeddings(
     model_name=model_name,
-    # model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     encode_kwargs={'normalize_embeddings': True},
 )
 
@@ -75,7 +75,7 @@ hf_embeddings = HuggingFaceEmbeddings(
 faiss_db = FAISS.from_documents(
     splits,
     hf_embeddings,
-#     normalize_L2=True,
+    # normalize_L2=True,
     distance_strategy=DistanceStrategy.COSINE,
 )
 
@@ -87,15 +87,31 @@ retriever = faiss_db.as_retriever(
 
 # llm model
 # llm_model_name = "yentinglin/Taiwan-LLM-7B-v2.1-chat"
-llm_model_name = "../models/llama2-7b-chat"
-# llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
+# llm_model_name = "../models/llama2-7b-chat"
+# llm_model_name = "../models/llama2-7b-chat-8bit"
+# llm_model_name = "../models/Llama-2-7b-chat-hf"
+llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
+
+# TODO: quantization
+quantization_config = BitsAndBytesConfig(
+    # load_in_8bit=True,
+    # llm_int8_enable_fp32_cpu_offload=False,
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=True,
+)
+# quantization_config = GPTQConfig(bits=4, dataset='c4', tokenizer=tokenizer)  # torch >= 2.0
+# quantization_config = QuantoConfig(weights='int8')  # torch>=2.0
+
 
 model = AutoModelForCausalLM.from_pretrained(
     llm_model_name,
     torch_dtype=torch.float16,
     trust_remote_code=True,
     device_map="cuda",
+    quantization_config=quantization_config,
+    low_cpu_mem_usage=True,
+    # use_safetensors=True,
 )
 
 hf_pipeline = pipeline(
@@ -121,23 +137,23 @@ llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
 
 # prompt
-llama_prompt = PromptLlama2()
-# llama_prompt = PromptLlama3()
+# llama_prompt = PromptLlama2()
+llama_prompt = PromptLlama3()
 
 # llama3
-# system = """Use the following context to answer the user's question.
-# If you don't know the answer or the question is not directly related to the context, you should answer you don't know and don't generate any answers."""
+system = """Use the following context to answer the user's question.
+If you don't know the answer or the question is not directly related to the context, you should answer you don't know and don't generate any answers."""
 
-# instruction = """Please answer the {question} directly according to the context: {context}"""
+instruction = """Please answer the {question} directly according to the context: {context}"""
 
 
 # llama2
-system = """You serve as a assistant specialized in answering questions with the given context.
-If the following context is not directly related to the question, you must say that you don't know.
-Don't try to make up any answers. No potential connection and no guessing."""
+# system = """You serve as a assistant specialized in answering questions with the given context.
+# If the following context is not directly related to the question, you must say that you don't know.
+# Don't try to make up any answers. No potential connection and no guessing."""
 
-instruction = """Base on the following context: {context}, please answer {question}.
-If the question is not directly related to the description, you should answer you don't know."""
+# instruction = """Base on the following context: {context}, please answer {question}.
+# If the question is not directly related to the description, you should answer you don't know."""
 
 
 llama_prompt.set_system_prompt(system_prompt=system)
