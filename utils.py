@@ -2,6 +2,35 @@ from typing import Optional
 from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
+from langchain_huggingface import HuggingFacePipeline
+from langchain.prompts import PromptTemplate
+
+
+def similarity_search(vector_db, question, top_k: int = 10, threshold=None):
+    query_docs = vector_db.similarity_search_with_score(
+        question,
+        k=top_k,
+        distance_strategy=DistanceStrategy.COSINE,
+    )
+
+    doc_str = []
+    contexts = []
+    scores = []
+    for _doc, _score in query_docs:
+        if threshold is None or _score <= threshold:
+            doc_str.append(_doc)
+            contexts.append(_doc.page_content)
+        scores.append(_score)
+    return doc_str, contexts, scores
+
+
+def get_qa_prompt(prompt_template, question, contexts):
+    if len(contexts) == 0:
+        contexts = "Found nothing in the documents"
+    else:
+        contexts = '\n'.join(contexts)
+    input_prompt = prompt_template.format(context=contexts, question=question)
+    return input_prompt
 
 
 class QAChain():
@@ -9,7 +38,7 @@ class QAChain():
         self,
         llm_model,
         vector_db,
-        prompt_template,
+        prompt_template: PromptTemplate,
         top_k: int = 10,
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
@@ -22,25 +51,8 @@ class QAChain():
         self.threshold = similarity_score_threshold
 
     def __call__(self, question):
-        query_docs = self.vector_db.similarity_search_with_score(
-            question,
-            k=self.top_k,
-            distance_strategy=DistanceStrategy.COSINE,
-        )
-
-        doc_str = []
-        contexts = []
-        scores = []
-        for _doc, _score in query_docs:
-            if self.threshold is None or _score <= self.threshold:
-                doc_str.append(_doc)
-                contexts.append(_doc.page_content)
-            scores.append(_score)
-        if len(contexts) == 0:
-            contexts = "Found nothing in the documents"
-        else:
-            contexts = '\n'.join(contexts)
-        input_prompt = self.prompt_template.format(context=contexts, question=question)
+        doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold)
+        input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
 
         res = self.llm_model.invoke(input_prompt)
         output = {'query': question, 'result': res}
