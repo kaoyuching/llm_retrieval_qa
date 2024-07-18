@@ -1,11 +1,8 @@
 import sys
 sys.path.append("./")
 import os
-# from threadpoolctl import threadpool_limits
 import warnings
 warnings.filterwarnings("ignore")
-
-import traceback
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.llms import LlamaCpp
@@ -16,6 +13,14 @@ from splitter import split_html
 from llm_prompt import PromptLlama2, PromptLlama3
 from utils import similarity_search, get_qa_prompt
 
+r"""
+llama_cpp withh consume all CPUs on your device.
+If you run on the linux, you can run with the following example command:
+[limit 20 CPUs]
+
+taskset --cpu-list 0-20 python ./llm_retrievalqa_gguf.py
+"""
+
 
 # https://blog.infuseai.io/llama-2-llama-cpp-python-introduction-c5f67d979eaa
 # llama2 7b ggml: https://huggingface.co/TheBloke/Llama-2-7B-GGML
@@ -24,7 +29,8 @@ from utils import similarity_search, get_qa_prompt
 
 
 # load reference dataset
-filename = './example_files/sql_alchemy_doc_all.html'
+# filename = './example_files/sql_alchemy_doc_all.html'
+filename = './example_files/nvidia_doc.html'
 headers_to_split_on = [
     ("h1", "Header 1"),
     ("h2", "Header 2"),
@@ -72,8 +78,11 @@ prompt_template_fn, full_prompt = llama_prompt.get_template(instruction)
 
 
 # gguf model
+r'''
+# use with langchain
 llm = LlamaCpp(
-    model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q6_K.gguf",
+    # model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q6_K.gguf",
+    model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q4_K_M.gguf",
     add_space_prefix=False,
     temperature=0.0,
     n_ctx=4096,  # llama2 context window
@@ -85,26 +94,118 @@ llm = LlamaCpp(
     # streaming=True,
     verbose=False,
 )
+'''
+
+# with llama_cpp
+# document: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama.__init__
+from llama_cpp import Llama
+llm_cpp = Llama(
+    model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q6_K.gguf",
+    # model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q4_K_M.gguf",
+    n_ctx=4096,  # llama2 context window
+    n_threads=10,
+    verbose=False,
+)
+
+llm_cpp_kwargs = dict(
+    temperature=0.0,
+    max_tokens=2048,
+    top_p=1,
+    repeat_penalty=1.1,
+    echo=False,
+)
 
 
 import time
+from utils import QAChainCPP
+
+qa_chain_cpp = QAChainCPP(
+    llm_cpp,
+    faiss_db,
+    prompt_template_fn,
+    top_k=10,
+    return_source_documents=True,
+    similarity_score_threshold=None,
+    model_kwargs=llm_cpp_kwargs,
+)
+
 
 print("start answering question...")
-st = time.time()
 question = "How to say 'thank you' in germany?"
-doc_str, contexts, scores = similarity_search(faiss_db, question, top_k=10, threshold=None)
-input_prompt = get_qa_prompt(prompt_template_fn, question, contexts)
-print(f"Question: {question}")
-res = llm.invoke(input_prompt)
-print("time:", time.time() - st)
-print(res)
-
-
 st = time.time()
-question = "What is and_ in SQLAlchemy?"
-doc_str, contexts, scores = similarity_search(faiss_db, question, top_k=10, threshold=None)
-input_prompt = get_qa_prompt(prompt_template_fn, question, contexts)
-print(f"Question: {question}")
-res = llm.invoke(input_prompt)
+res = qa_chain_cpp(question)
 print("time:", time.time() - st)
-print(res)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "Can you introduce some german food?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "What is and_ in SQLAlchemy?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "How to use colume with SQLAlchemy?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "What is the compute capability?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "What is TensorRT?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "Can you explain what is TensorRT?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "How to bulid TensorRT engine?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "How to bulid TensorRT engine with python?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
+
+
+question = "How to bulid TensorRT engine with python from onnx model?"
+st = time.time()
+res = qa_chain_cpp(question)
+print("time:", time.time() - st)
+print(f"Question: {res['query']}\nAnswer: {res['result']}")
+print("=================")
