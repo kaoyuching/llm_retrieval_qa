@@ -1,0 +1,9 @@
+CairoSVG
+lxml
+beautifulsoup4
+
+transformers
+langchain
+langchain_community
+langchain_core
+langchain_huggingface
