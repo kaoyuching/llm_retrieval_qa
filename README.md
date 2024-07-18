@@ -40,5 +40,5 @@ See [`llm_retrievalqa.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/m
 ### Example pipeline with `llama-cpp-python` and `langchain`
 Waring: llama gguf model runs on CPU spends a lot of time
 
-GURF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF
+GGUF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF
 See [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)
