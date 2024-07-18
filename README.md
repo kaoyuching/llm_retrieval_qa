@@ -3,7 +3,7 @@
 Demonstrate retrieval QA with multiple documents that come from different file types.
 
 ### Environment
-[x] python > 3.8
+- [x] python > 3.8
 
 ### Prepare data
 #### Get `html` from URL
@@ -14,6 +14,9 @@ Simple usage:
 ```=shell
 $ python ./data_parser/html_parser.py [source url] -c html_data_parse_example.json
 ```
+
+#### Get `pdf` data
+TODO
 
 ### Export to onnx
 
@@ -28,3 +31,14 @@ $ python -m onnxruntime.transformers.models.llama.convert_to_onnx -m "../models/
 ```=shell
 $ optimum-cli export onnx --model "../models/Llama-2-7b-chat-hf" --task text-generation --opset 16 --device cuda --dtype fp16 "../models/Llama-2-7b-chat-hf-fp16"
 ```
+
+
+### Example pipeline with `huggingface transformers` and `langchain`
+See [`llm_retrievalqa.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa.py)
+
+
+### Example pipeline with `llama-cpp-python` and `langchain`
+Waring: llama gguf model runs on CPU spends a lot of time
+
+GURF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF
+See [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)
