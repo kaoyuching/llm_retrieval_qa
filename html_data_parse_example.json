@@ -1,0 +1,12 @@
+{
+    "html" : {
+        "parse_type": "html",
+        "filter_tags": ["body"],
+        "replace_tags": {"div.p": "p", "div.abstract": "p"},
+        "decompose_tags": ["head","style", "script"],
+        "preserve_tags":["table", "a", "p", "th", "tr", "td", "ul", "ol", "li", "dl", "dt", "dd", "h1", "h2", "h3", "h4", "h5", "img", "kdb", "pre"],
+        "preserve_attrs": ["href", "src", "id"],
+        "output_file": "./example_files/germany_beginner.html",
+        "url": "https://www.studying-in-germany.org/learn-german/"
+    }
+}
