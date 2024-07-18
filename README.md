@@ -37,8 +37,9 @@ $ optimum-cli export onnx --model "../models/Llama-2-7b-chat-hf" --task text-gen
 See [`llm_retrievalqa.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa.py)
 
 
-### Example pipeline with `llama-cpp-python` and `langchain`
-Waring: llama gguf model runs on CPU spends a lot of time
+### Example pipeline with `llama-cpp-python`
+Waring: llama gguf model runs on CPU spends a lot of time (few minutes compare to GPU)
 
-GGUF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF
-See [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)
+GGUF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF  
+Details are in the file [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)  
+llama_cpp will consume all the available CPUs, you can run with `taskset --cpu-list [numerical list of processors] command` on Linux to limit the CPU usage.
