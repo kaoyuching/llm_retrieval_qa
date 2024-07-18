@@ -40,6 +40,8 @@ See [`llm_retrievalqa.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/m
 ### Example pipeline with `llama-cpp-python`
 Waring: llama gguf model runs on CPU spends a lot of time (few minutes compare to GPU)
 
+llama-cpp-python API document: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/
 GGUF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF  
+
 Details are in the file [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)  
 llama_cpp will consume all the available CPUs, you can run with `taskset --cpu-list [numerical list of processors] command` on Linux to limit the CPU usage.
