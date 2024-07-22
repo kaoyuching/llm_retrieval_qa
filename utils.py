@@ -1,8 +1,12 @@
+import sys
+sys.path.append("./")
 from typing import Optional, Dict
 from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.prompts import PromptTemplate
+
+from wrapper import time_it
 
 
 def similarity_search(vector_db, question, top_k: int = 10, threshold=None):
@@ -49,6 +53,7 @@ class QAChain():
         self.return_source_documents = return_source_documents
         self.threshold = similarity_score_threshold
 
+    @time_it
     def __call__(self, question):
         doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold)
         input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
@@ -79,6 +84,7 @@ class QAChainCPP():
         self.threshold = similarity_score_threshold
         self.model_kwargs = model_kwargs
 
+    @time_it
     def __call__(self, question):
         doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold)
         input_prompt = get_qa_prompt(self.prompt_template, question, contexts)

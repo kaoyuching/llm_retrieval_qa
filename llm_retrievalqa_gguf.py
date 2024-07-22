@@ -14,7 +14,7 @@ from llm_prompt import PromptLlama2, PromptLlama3
 from utils import similarity_search, get_qa_prompt
 
 r"""
-llama_cpp withh consume all CPUs on your device.
+llama_cpp will consume all CPUs on your device.
 If you run on the linux, you can run with the following example command:
 [limit 20 CPUs]
 
@@ -132,80 +132,60 @@ qa_chain_cpp = QAChainCPP(
 
 print("start answering question...")
 question = "How to say 'thank you' in germany?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "Can you introduce some german food?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "What is and_ in SQLAlchemy?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "How to use colume with SQLAlchemy?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "What is the compute capability?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "What is TensorRT?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "Can you explain what is TensorRT?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "How to bulid TensorRT engine?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "How to bulid TensorRT engine with python?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
 
 
 question = "How to bulid TensorRT engine with python from onnx model?"
-st = time.time()
 res = qa_chain_cpp(question)
-print("time:", time.time() - st)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("=================")
