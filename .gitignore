@@ -9,6 +9,3 @@
 test/*.pkl
 build/*
 example_files/*
-!example_files/germany_beginner.html
-!example_files/nvidia_doc.html
-!example_files/sql_alchemy_doc_all.html
