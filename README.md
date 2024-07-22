@@ -15,6 +15,11 @@ Simple usage:
 $ python ./data_parser/html_parser.py [source url] -c html_data_parse_example.json
 ```
 
+Example data:
+1. `nvidia_doc.html`: from [https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html](https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html)
+2. `sql_alchemy_doc_all.html`: from [https://docs.sqlalchemy.org/en/20/core/sqlelement.html](https://docs.sqlalchemy.org/en/20/core/sqlelement.html)
+3. `germany_beginner.html`: from [https://www.studying-in-germany.org/learn-german/](https://www.studying-in-germany.org/learn-german/)
+
 #### Get `pdf` data
 TODO
 
