@@ -65,13 +65,20 @@ faiss_db = FAISS.from_documents(
 
 
 # llama2 prompt
-llama_prompt = PromptLlama2()
-system = """You serve as a assistant specialized in answering questions with the given context.
-If the following context is not directly related to the question, you must say that you don't know.
-Don't try to make up any answers. No potential connection and no guessing."""
+# llama_prompt = PromptLlama2()
+# system = """You serve as a assistant specialized in answering questions with the given context.
+# If the following context is not directly related to the question, you must say that you don't know.
+# Don't try to make up any answers. No potential connection and no guessing."""
 
-instruction = """Base on the following context: {context}, please answer {question}.
-If the question is not directly related to the description, you should answer you don't know."""
+# instruction = """Base on the following context: {context}, please answer {question}.
+# If the question is not directly related to the description, you should answer you don't know."""
+
+# llama3 prompt
+llama_prompt = PromptLlama3()
+system = """Use the following context to answer the user's question.
+If you don't know the answer or the question is not directly related to the context, you should answer you don't know and don't generate any answers."""
+
+instruction = """Please answer the {question} directly according to the context: {context}"""
 
 llama_prompt.set_system_prompt(system_prompt=system)
 prompt_template_fn, full_prompt = llama_prompt.get_template(instruction)
@@ -100,8 +107,8 @@ llm = LlamaCpp(
 # document: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama.__init__
 from llama_cpp import Llama
 llm_cpp = Llama(
-    model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q6_K.gguf",
-    # model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q4_K_M.gguf",
+    # model_path="../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q6_K.gguf",
+    model_path="../models/Llama-3-8B-Instruct-GGUF/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
     n_ctx=4096,  # llama2 context window
     n_threads=10,
     verbose=False,
@@ -116,7 +123,6 @@ llm_cpp_kwargs = dict(
 )
 
 
-import time
 from utils import QAChainCPP
 
 qa_chain_cpp = QAChainCPP(

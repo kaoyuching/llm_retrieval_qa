@@ -3,7 +3,7 @@
 Demonstrate retrieval QA with multiple documents that come from different file types.
 
 ### Environment
-- [x] python > 3.8
+- [x] python >= 3.8
 
 ### Prepare data
 #### Get `html` from URL
@@ -34,14 +34,28 @@ $ optimum-cli export onnx --model "../models/Llama-2-7b-chat-hf" --task text-gen
 
 
 ### Example pipeline with `huggingface transformers` and `langchain`
+Demo models: Llama2, Llama3
+
 See [`llm_retrievalqa.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa.py)
 
 
 ### Example pipeline with `llama-cpp-python`
 Waring: llama gguf model runs on CPU spends a lot of time (few minutes compare to GPU)
 
-llama-cpp-python API document: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/
-GGUF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF  
+Demo models: Llama2, Llama3
+
+#### Convert huggingface model to GGUF
+Use `convert_hf_to_gguf.py` in  `llama.cpp` to export gguf model. It requires `torch >= 2.2`.
+
+```=shell
+$ git clone https://github.com/ggerganov/llama.cpp/tree/master
+$ cd llama.cpp
+$ python convert_hf_to_gguf.py --outtype q8_0 --use-temp-file --outfile "[output GGUF model dir]" "[huggingface model dir]"
+```
+
+
+llama-cpp-python API document: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/  
+Llama2 GGUF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF  
 
 Details are in the file [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)  
 llama_cpp will consume all the available CPUs, you can run with `taskset --cpu-list [numerical list of processors] command` on Linux to limit the CPU usage.
