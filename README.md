@@ -45,12 +45,12 @@ See [`llm_retrievalqa.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/m
 
 
 ### Example pipeline with `llama-cpp-python`
-Waring: llama gguf model runs on CPU spends a lot of time (few minutes compare to GPU)
+Waring: llama gguf model runs on CPU spends a lot of time (few minutes compare to GPU).  
 
 Demo models: Llama2, Llama3, Llama3.1
 
 #### Convert huggingface model to GGUF
-Use `convert_hf_to_gguf.py` in  `llama.cpp` to export gguf model. It requires `torch ~= 2.2.1`.
+Use `convert_hf_to_gguf.py` in `llama.cpp` to export gguf model. It requires `torch ~= 2.2.1`.
 
 ```=shell
 $ git clone https://github.com/ggerganov/llama.cpp/tree/master
@@ -61,8 +61,14 @@ $ python convert_hf_to_gguf.py --outtype q8_0 --use-temp-file --outfile "[output
 
 llama-cpp-python API document: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/  
 Llama2 GGUF models can get from: https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF  
-Llama3 GGUF models can get from: https://huggingface.co/doriskao/Llama-3-8B-Instruct-GGUF
+Llama3 GGUF models can get from: https://huggingface.co/doriskao/Llama-3-8B-Instruct-GGUF  
 Llama3.1 GGUF models can get from: https://huggingface.co/doriskao/Meta-Llama-3.1-8B-Instruct-GGUF
 
+
 Details are in the file [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)  
-llama_cpp will consume all the available CPUs, you can run with `taskset --cpu-list [numerical list of processors] command` on Linux to limit the CPU usage.
+llama_cpp will consume all the available CPUs, you can run with the following command on Linux to limit the CPU usage:
+
+```=shell
+$ taskset --cpu-list [numerical list of processors] command
+```
+
