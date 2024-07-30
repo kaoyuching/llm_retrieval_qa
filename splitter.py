@@ -7,7 +7,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 def split_html(
-    filename: str,
+    html_data: str,
     encoding: str = 'utf-8',
     sections_to_split: Optional[List[Tuple[str, str]]] = None,
     chunk_size: int = 500,
@@ -30,11 +30,8 @@ def split_html(
         - separators: separators used for splitting
 
     """
-    with open(filename, 'r', encoding=encoding) as f:
-        html_doc = f.read()
-
     html_splitter = HTMLSectionSplitter(sections_to_split)
-    html_header_splits = html_splitter.split_text(html_doc)
+    html_header_splits = html_splitter.split_text(html_data)
 
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
