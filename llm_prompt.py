@@ -13,7 +13,7 @@ class PromptBase(abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_template(self, instruction: str):
+    def get_template(self, instruction: str, **kwargs):
         raise NotImplementedError()
 
 
@@ -51,8 +51,9 @@ class PromptLlama2(PromptBase):
         else:
             self.system_prompt = self.B_SYS + self.system_prompt + self.E_SYS
 
-    def get_template(self, instruction: str):
-        full_prompt = self.B_SENT + self.B_INST + ' ' + self.system_prompt + instruction + ' ' + self.E_INST
+    def get_template(self, instruction: str, add_bos: bool = True, **kwargs):
+        B_SENT = self.B_SENT if add_bos else ''
+        full_prompt = B_SENT + self.B_INST + ' ' + self.system_prompt + instruction + ' ' + self.E_INST
         input_variables = re.findall('{(\w+)}', instruction)
 
         prompt_template = PromptTemplate(
@@ -87,14 +88,15 @@ class PromptLlama3(PromptBase):
 
     def set_system_prompt(self, system_prompt: Optional[str] = None):
         if system_prompt is not None:
-            self.system_prompt = self.B_TEXT + self.B_ROLE + "system" + \
+            self.system_prompt = self.B_ROLE + "system" + \
                 self.E_ROLE + system_prompt + self.E_INPUT
         else:
-            self.system_prompt = self.B_TEXT + self.B_ROLE + "system" + \
+            self.system_prompt = self.B_ROLE + "system" + \
                 self.E_ROLE + self.system_prompt + self.E_INPUT
 
-    def get_template(self, instruction: str):
-        full_prompt = self.system_prompt + self.B_ROLE + "user" + self.E_ROLE +\
+    def get_template(self, instruction: str, add_bos: bool = True, **kwargs):
+        B_TEXT = self.B_TEXT if add_bos else ''
+        full_prompt = B_TEXT + self.system_prompt + self.B_ROLE + "user" + self.E_ROLE +\
                 instruction + self.E_INPUT + self.B_ROLE + "assistant" + self.E_ROLE
 
         input_variables = re.findall('{(\w+)}', instruction)
@@ -132,7 +134,7 @@ class PromptPhi3(PromptBase):
         else:
             self.system_prompt = self.B_SYS + self.system_prompt + self.END
 
-    def get_template(self, instruction: str):
+    def get_template(self, instruction: str, **kwargs):
         full_prompt = self.system_prompt + self.B_ROLE + instruction + self.END + self.B_ASST
 
         input_variables = re.findall('{(\w+)}', instruction)
