@@ -6,7 +6,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.prompts import PromptTemplate
 
-from wrapper import time_it
+from llm_retrieval_qa.timeit import time_it
 
 
 def similarity_search(vector_db, question, top_k: int = 10, threshold=None):
