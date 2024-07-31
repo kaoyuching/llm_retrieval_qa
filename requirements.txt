@@ -1,3 +1,6 @@
+pydantic
+pydantic-settings
+
 CairoSVG
 lxml
 beautifulsoup4

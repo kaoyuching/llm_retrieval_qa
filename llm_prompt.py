@@ -1,11 +1,15 @@
 import abc
-from typing import Optional
+from typing import Optional, List, Dict
+from collections import namedtuple
 import re
 from langchain.prompts import PromptTemplate
 
 
+Message = namedtuple("Message", "role content")
+
+
 class PromptBase(abc.ABC):
-    def __init__(self):
+    def __init__(self, system_prompt: Optional[str] = None):
         pass
 
     @abc.abstractmethod
@@ -30,20 +34,25 @@ class PromptLlama2(PromptBase):
     <</SYS>>
 
     {{ user_message }} [/INST]
+
+    prompt example with assistant:
+    <s>[INST] <<SYS>>
+    {{ system_prompt }}
+    <</SYS>>
+
+    {{ user_message_1 }} [/INST] {{ model_answer_1 }} </s>
+    <s>[INST] {{ user_message_2 }} [/INST]
     '''
-    def __init__(self):
-        self.B_SENT = "<s>"
-        self.E_SENT = "</s>"
-        self.B_INST = "[INST]"
-        self.E_INST = "[/INST]"
-        self.B_SYS = "<<SYS>>\n" 
-        self.E_SYS = "\n<</SYS>>\n\n"
-        self.system_prompt = """You are a helpful, respectful and honest assistant.
-        Always answer as helpfully as possible, while being safe.
-        Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content.
-        Please ensure that your responses are socially unbiased and positive in nature.
-        If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct.
-        If you don't know the answer to a question, please don't share false information."""
+    B_SENT = "<s>"
+    E_SENT = " </s>\n"
+    B_INST = "[INST] "
+    E_INST = " [/INST]"
+    B_SYS = "<<SYS>>\n" 
+    E_SYS = "\n<</SYS>>\n\n"
+
+    def __init__(self, system_prompt: Optional[str] = None):
+        self.system_prompt = "You are a helpful, respectful and honest assistant."
+        self.set_system_prompt(system_prompt)
 
     def set_system_prompt(self, system_prompt: Optional[str] = None):
         if system_prompt is not None:
@@ -51,16 +60,27 @@ class PromptLlama2(PromptBase):
         else:
             self.system_prompt = self.B_SYS + self.system_prompt + self.E_SYS
 
-    def get_template(self, instruction: str, add_bos: bool = True, **kwargs):
+    def get_template(self, messages: List[Message], add_bos: bool = True, **kwargs):
+        if len(messages) == 0:
+            raise ValueError("messages cannot be empty.")
+
         B_SENT = self.B_SENT if add_bos else ''
-        full_prompt = B_SENT + self.B_INST + ' ' + self.system_prompt + instruction + ' ' + self.E_INST
-        input_variables = re.findall('{(\w+)}', instruction)
+        full_prompt_template = B_SENT + self.B_INST + self.system_prompt + messages[0].content + self.E_INST
+
+        if len(messages) > 2:
+            for i, message in enumerate(messages[1:]):
+                if message.role == "user":
+                    full_prompt_template += self.B_SENT + self.B_INST + message.content + self.E_INST
+                elif message.role == "assistant":
+                    full_prompt_template += ' ' + message.content + self.E_SENT
+
+        input_variables = re.findall('{(\w+)}', full_prompt_template)
 
         prompt_template = PromptTemplate(
             input_variables=input_variables,
-            template=full_prompt,
+            template=full_prompt_template,
         )
-        return prompt_template, full_prompt
+        return prompt_template, full_prompt_template
 
 
 class PromptLlama3(PromptBase):
@@ -79,12 +99,14 @@ class PromptLlama3(PromptBase):
     What can you help me with?<|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
     '''
-    def __init__(self):
-        self.B_TEXT = "<|begin_of_text|>"
-        self.B_ROLE = "<|start_header_id|>"
-        self.E_ROLE = "<|end_header_id|>\n\n"
-        self.E_INPUT = "<|eot_id|>\n"
-        self.system_prompt = """You are a helpful AI assistant"""
+    B_TEXT = "<|begin_of_text|>"
+    B_ROLE = "<|start_header_id|>"
+    E_ROLE = "<|end_header_id|>\n\n"
+    E_INPUT = "<|eot_id|>\n"
+
+    def __init__(self, system_prompt: Optional[str] = None):
+        self.system_prompt = "You are a helpful AI assistant"
+        self.set_system_prompt(system_prompt)
 
     def set_system_prompt(self, system_prompt: Optional[str] = None):
         if system_prompt is not None:
@@ -94,18 +116,26 @@ class PromptLlama3(PromptBase):
             self.system_prompt = self.B_ROLE + "system" + \
                 self.E_ROLE + self.system_prompt + self.E_INPUT
 
-    def get_template(self, instruction: str, add_bos: bool = True, **kwargs):
+    def get_template(self, messages: List[Message], add_bos: bool = True, **kwargs):
         B_TEXT = self.B_TEXT if add_bos else ''
-        full_prompt = B_TEXT + self.system_prompt + self.B_ROLE + "user" + self.E_ROLE +\
-                instruction + self.E_INPUT + self.B_ROLE + "assistant" + self.E_ROLE
+        ROLE_USER = self.B_ROLE + "user" + self.E_ROLE
+        ROLE_ASST = self.B_ROLE + "assistant" + self.E_ROLE
 
-        input_variables = re.findall('{(\w+)}', instruction)
+        full_prompt_template = B_TEXT + self.system_prompt
+        for message in messages:
+            if message.role == "user":
+                full_prompt_template += ROLE_USER + message.content + self.E_INPUT
+            elif message.role == "assistant":
+                full_prompt_template += ROLE_ASST + message.content + self.E_INPUT
+        full_prompt_template += ROLE_ASST
+
+        input_variables = re.findall('{(\w+)}', full_prompt_template)
 
         prompt_template = PromptTemplate(
             input_variables=input_variables,
-            template=full_prompt,
+            template=full_prompt_template,
         )
-        return prompt_template, full_prompt
+        return prompt_template, full_prompt_template
 
 
 class PromptPhi3(PromptBase):
@@ -121,12 +151,14 @@ class PromptPhi3(PromptBase):
         Question?<|end|>
         <|assistant|>
     """
-    def __init__(self):
-        self.B_SYS = "<|system|>\n"
-        self.B_ROLE = "<|user|>\n"
-        self.B_ASST = "<|assistant|>\n"
-        self.END = "<|end|>\n"
+    B_SYS = "<|system|>\n"
+    B_ROLE = "<|user|>\n"
+    B_ASST = "<|assistant|>\n"
+    END = "<|end|>\n"
+
+    def __init__(self, system_prompt: Optional[str] = None):
         self.system_prompt = "You are a helpful assistant."
+        self.set_system_prompt(system_prompt)
 
     def set_system_prompt(self, system_prompt: Optional[str] = None):
         if system_prompt is not None:
@@ -134,13 +166,22 @@ class PromptPhi3(PromptBase):
         else:
             self.system_prompt = self.B_SYS + self.system_prompt + self.END
 
-    def get_template(self, instruction: str, **kwargs):
-        full_prompt = self.system_prompt + self.B_ROLE + instruction + self.END + self.B_ASST
+    def get_template(self, messages: List[Message], **kwargs):
+        r"""
+        content: [{role: ..., content: ...}]
+        """
+        full_prompt_template = self.system_prompt + self.B_ASST
+        for message in messages:
+            if message.role == "user":
+                full_prompt_template += self.B_ROLE + message.content + self.END
+            elif message.role == "assistant":
+                full_prompt_template += self.B_ASST + message.content + self.END
+        full_prompt_template += self.B_ASST
 
-        input_variables = re.findall('{(\w+)}', instruction)
+        input_variables = re.findall('{(\w+)}', full_prompt_template)
 
         prompt_template = PromptTemplate(
             input_variables=input_variables,
-            template=full_prompt,
+            template=full_prompt_template,
         )
-        return prompt_template, full_prompt
+        return prompt_template, full_prompt_template
