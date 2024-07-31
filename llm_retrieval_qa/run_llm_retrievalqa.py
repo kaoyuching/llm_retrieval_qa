@@ -10,11 +10,10 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from configs import settings, model_config, get_prompt_template
-from splitter import split_html
-import llm_prompt
-
-from model_loader import load_model
+from llm_retrieval_qa.configs import settings, model_config, get_prompt_template
+from llm_retrieval_qa.splitter import split_html
+from llm_retrieval_qa.pipeline import llm_prompt
+from llm_retrieval_qa.pipeline.model_loader import load_model
 
 
 def load_doc_data(settings):
@@ -75,11 +74,12 @@ print("prompt:\n", full_prompt_template)
 
 
 model = load_model(model_config, settings.quantization, settings.device)
+
 if model_config["format"] == "hf":
     import torch
     from transformers import AutoTokenizer, pipeline
     from langchain_huggingface import HuggingFacePipeline
-    from utils import QAChain
+    from llm_retrieval_qa.pipeline.chain import QAChain
 
     tokenizer = AutoTokenizer.from_pretrained(llm_model_path)
     hf_pipeline = pipeline(
@@ -94,7 +94,7 @@ if model_config["format"] == "hf":
     llm = HuggingFacePipeline(pipeline=hf_pipeline)
     qa_chain = QAChain(llm, faiss_db, prompt_template_fn, top_k=10, return_source_documents=True, similarity_score_threshold=None)
 elif model_config["format"] == "gguf":
-    from utils import QAChainCPP
+    from llm_retrieval_qa.pipeline.chain import QAChainCPP
 
     qa_chain = QAChainCPP(
         model,
@@ -110,12 +110,25 @@ else:
 
 
 # example questions
-from example_data_config import example_questions
+# from example_data_config import example_questions
+example_fname = settings.example_question_file
+if example_fname:
+    with open(example_fname, "r") as f:
+        example_questions = [line.rstrip("\n") for line in f]
 
-print("start answering example questions...")
-for question in example_questions:
-    print(f"Question: {question}")
-    res = qa_chain(question)
-    # print(f"Question: {res['query']}\nAnswer: {res['result']}")
-    print(f"Answer: {res['result']}")
-    print("=================")
+    print("start answering example questions...")
+    for question in example_questions:
+        print(f"Question: {question}")
+        print("Answer:")
+        res = qa_chain(question)
+        print(f"{res['result']}")
+        print("=================")
+else:
+    while True:
+        question = input("Enter Question:")
+        if question.lower() in ["exit", "quit"]:
+            break
+        print("Answer:")
+        res = qa_chain(question)
+        print(f"{res['result']}")
+        
