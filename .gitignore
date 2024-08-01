@@ -8,6 +8,8 @@
 *.jpg
 *.env
 *.txt
+!requirements*.txt
+!requirements/*.txt
 test/*.pkl
 build/*
 example_files/*
