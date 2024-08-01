@@ -1,5 +1,6 @@
 from typing import Dict
 import copy
+import atexit
 # load model config
 from llm_retrieval_qa.runtime_config import get_model_config
 
@@ -18,7 +19,10 @@ def load_model(
 
         model = Llama(model_path=model_path, **model_kwargs)
         # deal with exit issue
-        model._stack.pop_all()
+        @atexit.register
+        def free_model():
+            model.close()
+            model._stack.pop_all()
     elif model_format == "hf":
         import torch
         from transformers import AutoModelForCausalLM
