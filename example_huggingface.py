@@ -22,7 +22,7 @@ from transformers import GPTQConfig, BitsAndBytesConfig, QuantoConfig
 from transformers import AutoModelForCausalLM
 
 from splitter import split_html
-from llm_prompt import PromptLlama2, PromptLlama3
+from llm_prompt import PromptLlama2, PromptLlama3, PromptPhi3
 
 
 r'''
@@ -32,8 +32,8 @@ llama3: https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3/
 '''
 
 
-filename = './example_files/nvidia_doc.html'
-# filename = './example_files/sql_alchemy_doc_all.html'
+# filename = './example_files/nvidia_doc.html'
+filename = './example_files/sql_alchemy_doc_all.html'
 # filename = './example_files/germany_beginner.html'
 with open(filename, 'r', encoding='utf-8') as f:
     html_doc = f.read()
@@ -65,6 +65,7 @@ splits = text_splitter.split_documents(html_header_splits)
 
 # model_name = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 model_name = "GanymedeNil/text2vec-large-chinese"
+# model_name = "sentence-transformers/multi-qa-mpnet-base-dot-v1"
 hf_embeddings = HuggingFaceEmbeddings(
     model_name=model_name,
     encode_kwargs={'normalize_embeddings': True},
@@ -72,6 +73,15 @@ hf_embeddings = HuggingFaceEmbeddings(
 
 
 # vector store
+# TODO: vector store and similarity search
+# import faiss
+
+# embedding_list = hf_embeddings.embed_documents(splits)
+# embedding_dim = len(embedding_list)
+# index = faiss.IndexFlatL2(embedding_dim)
+# index.add(embedding_list)
+
+
 faiss_db = FAISS.from_documents(
     splits,
     hf_embeddings,
@@ -79,8 +89,10 @@ faiss_db = FAISS.from_documents(
     distance_strategy=DistanceStrategy.COSINE,
 )
 
+# TODO: langchain retriever
 retriever = faiss_db.as_retriever(
-    search_type='similarity',  # mmr
+    # search_type='similarity',  # mmr
+    search_type='mmr',  # mmr
     search_kwarg={'k': 20},
 )
 
@@ -90,8 +102,12 @@ retriever = faiss_db.as_retriever(
 # llm_model_name = "../models/llama2-7b-chat"
 # llm_model_name = "../models/llama2-7b-chat-8bit"
 # llm_model_name = "../models/Llama-2-7b-chat-hf"
-llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
+# llm_model_name = "microsoft/Phi-3-mini-4k-instruct"
+# llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
+# llm_model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+llm_model_name = "../models/Meta-Llama-3.1-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
+# tokenizer.save_pretrained("../models/llama2-7b-chat-8bit")
 
 # TODO: quantization
 quantization_config = BitsAndBytesConfig(
@@ -103,13 +119,16 @@ quantization_config = BitsAndBytesConfig(
 # quantization_config = GPTQConfig(bits=4, dataset='c4', tokenizer=tokenizer)  # torch >= 2.0
 # quantization_config = QuantoConfig(weights='int8')  # torch>=2.0
 
+print("load model")
+# from compression import load_compress_model
+# model = load_compress_model(llm_model_name, "cuda", torch.float16, False, use_safetensors=True)
 
 model = AutoModelForCausalLM.from_pretrained(
     llm_model_name,
     torch_dtype=torch.float16,
     trust_remote_code=True,
     device_map="cuda",
-    quantization_config=quantization_config,
+    # quantization_config=quantization_config,
     low_cpu_mem_usage=True,
     # use_safetensors=True,
 )
@@ -124,11 +143,12 @@ hf_pipeline = pipeline(
     num_return_sequences=1,
     eos_token_id=tokenizer.eos_token_id,
     pad_token_id=tokenizer.eos_token_id,
-    # temperature=0.0,  # 0.7 #TODO: temperature < 0.1
+    temperature=0.0,  # 0.7 #TODO: temperature < 0.1
     do_sample=False,  # False if temperature is 0
     # top_p=0.9,
     repetition_penalty=1.1,
     return_full_text=False,
+    # low_memory=True,
     # truncation=True,
 #     streamer=streamer,
 )
@@ -138,13 +158,14 @@ llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
 # prompt
 # llama_prompt = PromptLlama2()
-llama_prompt = PromptLlama3()
+# llama_prompt = PromptLlama3()
+llama_prompt = PromptPhi3()
 
 # llama3
-system = """Use the following context to answer the user's question.
-If you don't know the answer or the question is not directly related to the context, you should answer you don't know and don't generate any answers."""
+# system = """Use the following context to answer the user's question.
+# If you don't know the answer or the question is not directly related to the context, you should answer you don't know and don't generate any answers."""
 
-instruction = """Please answer the {question} directly according to the context: {context}"""
+# instruction = """Please answer the {question} directly according to the context: {context}"""
 
 
 # llama2
@@ -154,6 +175,15 @@ instruction = """Please answer the {question} directly according to the context:
 
 # instruction = """Base on the following context: {context}, please answer {question}.
 # If the question is not directly related to the description, you should answer you don't know."""
+
+
+# phi3
+system = """You serve as a assistant specialized in answering questions with the given context.
+If the following context is not directly related to the question, you must say that you don't know.
+Don't try to make up any answers. No potential connection and no guessing."""
+
+instruction = """Base on the following context: {context}, please answer {question}.
+If the question is not directly related to the description, you should answer you don't know."""
 
 
 llama_prompt.set_system_prompt(system_prompt=system)
@@ -166,61 +196,61 @@ qa_chain = QAChain(llm, faiss_db, prompt_template_fn, top_k=10, return_source_do
 
 
 print("=================start=====================")
-res = qa_chain("How to say 'thank you' in germany?")
+res = qa_chain("How to say 'thank you' in german?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("Can you introduce some german food?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
-res = qa_chain("How to use and_ in SQLAlchemy?")
+res = qa_chain("What is and_ in SQLAlchemy?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("How to use colume with SQLAlchemy?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
-res = qa_chain("What is the compute capability?")
+res = qa_chain("What is the compute capability of GPU?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("What is TensorRT?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("Can you explain what is TensorRT?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("How to bulid TensorRT engine?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("How to bulid TensorRT engine with python?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")
 print("=================")
 
 res = qa_chain("How to bulid TensorRT engine with python from onnx model?")
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
 print("---------------------")
-print(f"docs: {res['source_documents']}")
+# print(f"docs: {res['source_documents']}")

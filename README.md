@@ -41,13 +41,13 @@ $ optimum-cli export onnx --model "../models/Llama-2-7b-chat-hf" --task text-gen
 ### Example pipeline with `huggingface transformers` and `langchain`
 Demo models: Llama2, Llama3
 
-See [`llm_retrievalqa.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa.py)
+See [`./examples/example_huggingface.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/examples/example_huggingface.py)
 
 
 ### Example pipeline with `llama-cpp-python`
 Waring: llama gguf model runs on CPU spends a lot of time (few minutes compare to GPU).  
 
-Demo models: Llama2, Llama3, Llama3.1
+Demo models: Llama2, Llama3, Llama3.1, Phi3-Mini
 
 #### Convert huggingface model to GGUF
 Use `convert_hf_to_gguf.py` in `llama.cpp` to export gguf model. It requires `torch ~= 2.2.1`.
@@ -65,7 +65,8 @@ Llama3 GGUF models can get from: https://huggingface.co/doriskao/Llama-3-8B-Inst
 Llama3.1 GGUF models can get from: https://huggingface.co/doriskao/Meta-Llama-3.1-8B-Instruct-GGUF
 
 
-Details are in the file [`llm_retrievalqa_gguf.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/llm_retrievalqa_gguf.py)  
+Example pipeline using `langchain`: [`./examples/example_gguf_langchain.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/examples/example_gguf_langchain.py)  
+Example pipeline using `llama_cpp_python`: [`./examples/example_gguf_llamacpp.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/examples/example_gguf_llamacpp.py)  
 llama_cpp will consume all the available CPUs, you can run with the following command on Linux to limit the CPU usage:
 
 ```=shell
