@@ -39,7 +39,7 @@ $ optimum-cli export onnx --model "../models/Llama-2-7b-chat-hf" --task text-gen
 
 
 ### Example pipeline with `huggingface transformers` and `langchain`
-Demo models: Llama2, Llama3
+Demo models: Llama2, Llama3, Llama3.1(need transformers >= 4.43.3), Phi3-mini
 
 See [`./examples/example_huggingface.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/examples/example_huggingface.py)
 

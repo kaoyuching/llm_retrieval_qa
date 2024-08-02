@@ -21,8 +21,8 @@ from transformers import GPTQConfig, BitsAndBytesConfig, QuantoConfig
 # https://huggingface.co/docs/transformers/model_doc/auto#transformers.AutoModelForCausalLM
 from transformers import AutoModelForCausalLM
 
-from splitter import split_html
-from llm_prompt import PromptLlama2, PromptLlama3, PromptPhi3
+from llm_retrieval_qa.splitter import split_html
+from llm_retrieval_qa.pipeline.llm_prompt import PromptLlama2, PromptLlama3, PromptPhi3, Message
 
 
 r'''
@@ -32,9 +32,7 @@ llama3: https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3/
 '''
 
 
-# filename = './example_files/nvidia_doc.html'
 filename = './example_files/sql_alchemy_doc_all.html'
-# filename = './example_files/germany_beginner.html'
 with open(filename, 'r', encoding='utf-8') as f:
     html_doc = f.read()
 
@@ -102,10 +100,10 @@ retriever = faiss_db.as_retriever(
 # llm_model_name = "../models/llama2-7b-chat"
 # llm_model_name = "../models/llama2-7b-chat-8bit"
 # llm_model_name = "../models/Llama-2-7b-chat-hf"
-# llm_model_name = "microsoft/Phi-3-mini-4k-instruct"
+llm_model_name = "microsoft/Phi-3-mini-4k-instruct"
 # llm_model_name = "../models/Meta-Llama-3-8B-Instruct"
 # llm_model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-llm_model_name = "../models/Meta-Llama-3.1-8B-Instruct"
+# llm_model_name = "../models/Meta-Llama-3.1-8B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(llm_model_name)
 # tokenizer.save_pretrained("../models/llama2-7b-chat-8bit")
 
@@ -116,8 +114,6 @@ quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_use_double_quant=True,
 )
-# quantization_config = GPTQConfig(bits=4, dataset='c4', tokenizer=tokenizer)  # torch >= 2.0
-# quantization_config = QuantoConfig(weights='int8')  # torch>=2.0
 
 print("load model")
 # from compression import load_compress_model
@@ -156,11 +152,6 @@ hf_pipeline = pipeline(
 llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
 
-# prompt
-# llama_prompt = PromptLlama2()
-# llama_prompt = PromptLlama3()
-llama_prompt = PromptPhi3()
-
 # llama3
 # system = """Use the following context to answer the user's question.
 # If you don't know the answer or the question is not directly related to the context, you should answer you don't know and don't generate any answers."""
@@ -185,72 +176,18 @@ Don't try to make up any answers. No potential connection and no guessing."""
 instruction = """Base on the following context: {context}, please answer {question}.
 If the question is not directly related to the description, you should answer you don't know."""
 
-
-llama_prompt.set_system_prompt(system_prompt=system)
-prompt_template_fn, full_prompt = llama_prompt.get_template(instruction)
+llama_prompt = PromptPhi3(system)
+messages = [Message("user", instruction)]
+prompt_template_fn, full_prompt = llama_prompt.get_template(messages)
 print(full_prompt)
 
-from utils import QAChain
+from llm_retrieval_qa.pipeline.chain import QAChain
 
 qa_chain = QAChain(llm, faiss_db, prompt_template_fn, top_k=10, return_source_documents=True, similarity_score_threshold=None)
 
 
 print("=================start=====================")
-res = qa_chain("How to say 'thank you' in german?")
+question = "How to build a TensorRT engine?"
+res = qa_chain(question)
 print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
 print("=================")
-
-res = qa_chain("Can you introduce some german food?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("What is and_ in SQLAlchemy?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("How to use colume with SQLAlchemy?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("What is the compute capability of GPU?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("What is TensorRT?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("Can you explain what is TensorRT?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("How to bulid TensorRT engine?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("How to bulid TensorRT engine with python?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
-print("=================")
-
-res = qa_chain("How to bulid TensorRT engine with python from onnx model?")
-print(f"Question: {res['query']}\nAnswer: {res['result']}")
-print("---------------------")
-# print(f"docs: {res['source_documents']}")
