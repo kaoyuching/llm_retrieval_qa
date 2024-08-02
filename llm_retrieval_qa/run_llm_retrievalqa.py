@@ -68,7 +68,6 @@ retriever = faiss_db.as_retriever(
 
 
 # prepare prompt
-# prompt_template_fn, full_prompt = configs.get_prompt_template()
 prompt_template_fn, full_prompt_template = get_prompt_template(model_config["prompt_template"])
 print("prompt:\n", full_prompt_template)
 
@@ -110,7 +109,6 @@ else:
 
 
 # example questions
-# from example_data_config import example_questions
 example_fname = settings.example_question_file
 if example_fname:
     with open(example_fname, "r") as f:
@@ -131,4 +129,3 @@ else:
         print("Answer:")
         res = qa_chain(question)
         print(f"{res['result']}")
-        

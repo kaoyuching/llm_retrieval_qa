@@ -1,5 +1,3 @@
-import sys
-sys.path.append("./")
 from typing import Optional, Dict
 from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
