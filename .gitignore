@@ -13,3 +13,6 @@
 test/*.pkl
 build/*
 example_files/*
+*.pkl
+*.faiss
+volumes/*
