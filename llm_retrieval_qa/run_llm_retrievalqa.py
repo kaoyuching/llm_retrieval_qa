@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.append("./")
 import warnings
@@ -10,8 +11,9 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from llm_retrieval_qa.configs import settings, model_config, get_prompt_template
+from llm_retrieval_qa.configs import settings, model_config, vector_store_config, get_prompt_template
 from llm_retrieval_qa.splitter import split_html
+from llm_retrieval_qa.vector_store import HFEmbedding, DbMilvus
 from llm_retrieval_qa.pipeline import llm_prompt
 from llm_retrieval_qa.pipeline.model_loader import load_model
 
@@ -21,6 +23,7 @@ def load_doc_data(settings):
         data = f.read()
     return data
 
+doc_fname = os.path.basename(settings.doc_file_name)
 html_doc = load_doc_data(settings)
 
 embedding_model_path = model_config["embedding_model_path"]
@@ -36,8 +39,8 @@ headers_to_split_on = [
     ("table", 'table'),
 ]
 
-chunk_size = 1000 # 800
-chunk_overlap = 50 # 30
+chunk_size = 500 # 1000
+chunk_overlap = 30 # 50
 splits = split_html(
     html_doc,
     encoding='utf-8',
@@ -49,22 +52,41 @@ splits = split_html(
 
 
 # vector store
-hf_embeddings = HuggingFaceEmbeddings(
-    model_name=embedding_model_path,
-    encode_kwargs={'normalize_embeddings': True},
-)
+if vector_store_config.type == "milvus":
+    model_name = "GanymedeNil/text2vec-large-chinese"
+    hf_embedding = HFEmbedding(model_name, normalize_embeddings=True, device_map=settings.device)
 
-faiss_db = FAISS.from_documents(
-    splits,
-    hf_embeddings,
-    distance_strategy=DistanceStrategy.COSINE,
-)
+    vector_db = DbMilvus(
+        hf_embedding,
+        vector_store_config.uri,
+        db_name=vector_store_config.db_name,
+        collection_name=vector_store_config.collection,
+    )
 
-retriever = faiss_db.as_retriever(
-    # search_type='similarity',  # mmr
-    search_type='mmr',  # mmr
-    search_kwarg={'k': 20},
-)
+    texts = [x.dict()["page_content"] for x in splits]
+    # check if the doc is already in the vector db using doc_fname
+    exist_docs = vector_db.get(f'doc_fname == "{doc_fname}"')
+    if len(exist_docs) == 0:
+        _ = vector_db.create(texts, doc_fname=doc_fname)
+elif vector_store_config.type == "faiss":
+    hf_embeddings = HuggingFaceEmbeddings(
+        model_name=embedding_model_path,
+        encode_kwargs={'normalize_embeddings': True},
+    )
+
+    vector_db = FAISS.from_documents(
+        splits,
+        hf_embeddings,
+        distance_strategy=DistanceStrategy.COSINE,
+    )
+
+    retriever = vector_db.as_retriever(
+        # search_type='similarity',  # mmr
+        search_type='mmr',  # mmr
+        search_kwarg={'k': 20},
+    )
+else:
+    raise ValueError("Invallid vector database")
 
 
 # prepare prompt
@@ -73,6 +95,7 @@ print("prompt:\n", full_prompt_template)
 
 
 model = load_model(model_config, settings.quantization, settings.device)
+top_k = settings.search_topk
 
 if model_config["format"] == "hf":
     import torch
@@ -91,15 +114,15 @@ if model_config["format"] == "hf":
         **llm_model_runtime_kwargs,
     )
     llm = HuggingFacePipeline(pipeline=hf_pipeline)
-    qa_chain = QAChain(llm, faiss_db, prompt_template_fn, top_k=10, return_source_documents=True, similarity_score_threshold=None)
+    qa_chain = QAChain(llm, vector_db, prompt_template_fn, top_k=top_k, return_source_documents=True, similarity_score_threshold=None)
 elif model_config["format"] == "gguf":
     from llm_retrieval_qa.pipeline.chain import QAChainCPP
 
     qa_chain = QAChainCPP(
         model,
-        faiss_db,
+        vector_db,
         prompt_template_fn,
-        top_k=10,
+        top_k=top_k,
         return_source_documents=True,
         similarity_score_threshold=None,
         model_kwargs=llm_model_runtime_kwargs,

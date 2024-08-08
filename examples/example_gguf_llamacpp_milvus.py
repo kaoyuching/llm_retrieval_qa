@@ -33,6 +33,7 @@ taskset --cpu-list 0-20 python ./llm_retrievalqa_gguf.py
 # load reference dataset
 # filename = './example_files/nvidia_doc.html'
 filename = './example_files/sql_alchemy_doc_all.html'
+doc_fname = os.path.basename(settings.doc_file_name)
 headers_to_split_on = [
     ("h1", "Header 1"),
     ("h2", "Header 2"),
@@ -65,7 +66,9 @@ vector_db = DbMilvus(
 
 # write vectors to db
 texts = [x.dict()["page_content"] for x in splits]
-res = vector_db.create(texts, doc_name="sql_doc")
+exist_docs = vector_db.get(f'doc_fname == "{doc_fname}"')
+if len(exist_docs) == 0:
+    _ = vector_db.create(texts, doc_fname=doc_fname)
 
 
 # llama2 prompt

@@ -89,6 +89,22 @@ class QAChain():
         return output
 
 
+class QAChainHF(QAChain):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @time_it
+    def __call__(self, question):
+        doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold)
+        input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
+
+        res = self.llm_model(input_prompt)
+        output = {'query': question, 'result': res[0]["generated_text"]}
+        if self.return_source_documents:
+            output['source_documents'] = doc_str
+        return output
+
+
 class QAChainCPP():
     def __init__(
         self,

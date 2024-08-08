@@ -1,6 +1,6 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Literal, Union
 import copy
-from pydantic import Field
+from pydantic import Field, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from llm_retrieval_qa.pipeline import llm_prompt
@@ -8,11 +8,29 @@ from llm_retrieval_qa.pipeline.llm_prompt import Message
 from llm_retrieval_qa.runtime_config import get_model_config
 
 
+class VectorStoreSetting(BaseModel):
+    type: Literal[str]
+
+
+class MilvusSetting(VectorStoreSetting):
+    type: Literal["milvus"] = "milvus"
+    db_name: str
+    uri: str
+    collection: str
+
+
+class FAISSSetting(VectorStoreSetting):
+    type: Literal["faiss"] = "faiss"
+    db_name: str
+
+
 class Settings(BaseSettings):
     doc_file_name: str
+    vector_store: Union[MilvusSetting, FAISSSetting] = Field(..., discriminator="type")
     model_name: str
     quantization: bool = False
     device: str = "cpu"
+    search_topk: int = 10
     timer: bool = False
     example_question_file: Optional[str] = None
 
@@ -21,6 +39,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="allow",
+        env_nested_delimiter="__",
     )
 
 
@@ -41,3 +60,4 @@ def get_prompt_template(prompt_template_config: Dict):
 settings = Settings()
 # get model config
 model_config = get_model_config(settings.model_name)
+vector_store_config = settings.vector_store

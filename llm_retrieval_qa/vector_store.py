@@ -14,8 +14,9 @@ from pymilvus import DataType, FieldSchema, CollectionSchema
 
 class HFEmbedding():
     def __init__(self, model_path: str, normalize_embeddings: bool = True, device_map: str = "cpu"):
+        self.device = device_map
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        self.model = AutoModel.from_pretrained(model_path, device_map=device_map)
+        self.model = AutoModel.from_pretrained(model_path, device_map=self.device)
         self.normalize_embeddings = normalize_embeddings
         self.embedding_dim = self.model.get_input_embeddings().embedding_dim
         self.pos_emb_dim = self.model.config.max_position_embeddings
@@ -32,7 +33,7 @@ class HFEmbedding():
         return encoded_input
 
     def embedding(self, sentences: List[str]):
-        encoded_input = self.encode(sentences)
+        encoded_input = self.encode(sentences).to(self.device)
         with torch.no_grad():
             model_output = self.model(**encoded_input)
         embedding_output = self.mean_pooling(model_output, encoded_input['attention_mask'])
@@ -80,9 +81,9 @@ class DbMilvus():
         id_field = FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True, description="primary id")
         vector_field = FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=self.emb_dim, description="embedding vector")
         text_field = FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=65535, description="document content")
-        doc_name_field = FieldSchema(name="doc_name", dtype=DataType.VARCHAR, max_length=65535)
-        fields = [id_field, vector_field, text_field, doc_name_field]
-        self.field_names = ["id", "vector", "text", "doc_name"]
+        doc_fname_field = FieldSchema(name="doc_fname", dtype=DataType.VARCHAR, max_length=65535, description="document file name")
+        fields = [id_field, vector_field, text_field, doc_fname_field]
+        self.field_names = ["id", "vector", "text", "doc_fname"]
         collection_schema = CollectionSchema(fields, auto_id=True, enable_dynamic_field=True)
         return collection_schema
 
@@ -102,26 +103,37 @@ class DbMilvus():
                 }]
             )
 
-    def create(self, texts: List, doc_name: str = "default"):
+    def create(self, texts: List, doc_fname: str = "default"):
         r"""
         return:
             Dict: Number of rows that were inserted and the inserted primary key list.
         """
         vectors = self.embedding_fn.embedding(texts)  # shape (n, emb_dim)
-        data = [{"vector": vector, "text": text, "doc_name": doc_name} for vector, text in zip(vectors, texts)]
+        data = [{"vector": vector, "text": text, "doc_fname": doc_fname} for vector, text in zip(vectors, texts)]
         res = self.client.insert(self.collection_name, data)
         return res
 
     def similarity_search_with_score(self, data: str, top_k: int = 10, **kwargs):
         r"""
         search single question
+
+        Return:
+            - id, distance, entity
         """
         vector = self.embedding_fn.embedding([data])  # shape: (batch, embedding size)
         res = self.client.search(
             self.collection_name,
             data=vector,
             limit=top_k,
-            output_fields=["text", "doc_name"],
+            output_fields=["text", "doc_fname"],
             search_params={"metric_type": "COSINE"}
         )
         return res[0]
+
+    def get(self, filter: str = ""):
+        res = self.client.query(
+            self.collection_name,
+            filter=filter,
+            output_fields=self.field_names,
+        )
+        return res

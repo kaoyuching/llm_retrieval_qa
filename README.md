@@ -5,6 +5,7 @@ Demonstrate retrieval QA with multiple documents that come from different file t
 ### Environment
 - [x] python >= 3.8
 
+
 ### Prepare data
 #### Get `html` from URL
 
@@ -22,6 +23,11 @@ Example data are from:
 
 #### Get `pdf` data
 TODO
+
+
+### Vector store
+There are many ways to store embedded data and perform vector search. In this repository, I use FAISS / Milvus to store vectors.
+
 
 ### Export to onnx
 
