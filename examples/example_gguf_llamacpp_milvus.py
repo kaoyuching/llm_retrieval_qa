@@ -5,15 +5,11 @@ import warnings
 warnings.filterwarnings("ignore")
 import atexit
 
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.llms import LlamaCpp
-from langchain_community.vectorstores import FAISS
-from langchain_community.vectorstores.utils import DistanceStrategy
 
 from llm_retrieval_qa.splitter import split_html
 from llm_retrieval_qa.vector_store import HFEmbedding, DbMilvus
 from llm_retrieval_qa.pipeline.llm_prompt import PromptLlama2, PromptLlama3, Message
-from llm_retrieval_qa.pipeline.chain import similarity_search, get_qa_prompt
 
 r"""
 llama_cpp will consume all CPUs on your device.
