@@ -58,6 +58,12 @@ Llama3.1 GGUF models can get from: https://huggingface.co/doriskao/Meta-Llama-3.
 ### Vector store
 There are many ways to store embedded data and perform vector search. In this repository, I use FAISS / Milvus to store vectors.
 
+Run Milvus in Docker:
+
+```=shell
+$ docker compose -f ./milvus-docker-compose.yml up -d
+```
+
 
 ### Example pipeline with `huggingface transformers` and `langchain`
 Demo models: Llama2, Llama3, Llama3.1(need transformers >= 4.43.3), Phi3-mini
