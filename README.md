@@ -86,7 +86,7 @@ $ taskset --cpu-list [numerical list of processors] command
 
 
 ### Run with `run_llm_retrievalqa.py`
-1. Setup `.env` file. Here is the example:
+1. Setup `.env` file. Here is the example (embedding using onnx model, language model using gguf model):
 
 ```
 DOC_FILE_NAME="./example_files/nvidia_doc.html"
@@ -96,6 +96,7 @@ VECTOR_STORE__URI="http://localhost:19530"
 VECTOR_STORE__DB_NAME="docs_db"
 VECTOR_STORE__COLLECTION="data_collection"
 
+EMBEDDING_MODEL_TYPE="onnx"
 MODEL_NAME="llama3.1-gguf"
 QUANTIZATION="false"
 DEVICE="cuda"
