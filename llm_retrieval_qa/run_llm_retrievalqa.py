@@ -4,17 +4,13 @@ sys.path.append("./")
 import warnings
 warnings.filterwarnings("ignore")
 
-from langchain_core.documents import Document
-from langchain_text_splitters import HTMLSectionSplitter
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.vectorstores.utils import DistanceStrategy
-from langchain_huggingface import HuggingFaceEmbeddings
 
-from llm_retrieval_qa.configs import settings, model_config, vector_store_config, get_prompt_template
+from llm_retrieval_qa.configs import settings, model_config, vector_store_config,\
+    get_prompt_template, get_embedding_fn
 from llm_retrieval_qa.splitter import split_html
-from llm_retrieval_qa.vector_store import HFEmbedding, DbMilvus
-from llm_retrieval_qa.pipeline import llm_prompt
+from llm_retrieval_qa.vector_store import DbMilvus
 from llm_retrieval_qa.pipeline.model_loader import load_model
 
 
@@ -26,7 +22,6 @@ def load_doc_data(settings):
 doc_fname = os.path.basename(settings.doc_file_name)
 html_doc = load_doc_data(settings)
 
-embedding_model_path = model_config["embedding_model_path"]
 llm_model_runtime_kwargs = model_config["runtime"]
 
 
@@ -51,13 +46,13 @@ splits = split_html(
 )
 
 
+embedding_fn = get_embedding_fn(model_config["embedding_cfgs"])
+
+
 # vector store
 if vector_store_config.type == "milvus":
-    model_name = "GanymedeNil/text2vec-large-chinese"
-    hf_embedding = HFEmbedding(model_name, normalize_embeddings=True, device_map=settings.device)
-
     vector_db = DbMilvus(
-        hf_embedding,
+        embedding_fn,
         vector_store_config.uri,
         db_name=vector_store_config.db_name,
         collection_name=vector_store_config.collection,
@@ -69,14 +64,9 @@ if vector_store_config.type == "milvus":
     if len(exist_docs) == 0:
         _ = vector_db.create(texts, doc_fname=doc_fname)
 elif vector_store_config.type == "faiss":
-    hf_embeddings = HuggingFaceEmbeddings(
-        model_name=embedding_model_path,
-        encode_kwargs={'normalize_embeddings': True},
-    )
-
     vector_db = FAISS.from_documents(
         splits,
-        hf_embeddings,
+        embedding_fn,
         distance_strategy=DistanceStrategy.COSINE,
     )
 

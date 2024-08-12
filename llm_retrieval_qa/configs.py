@@ -27,6 +27,7 @@ class FAISSSetting(VectorStoreSetting):
 class Settings(BaseSettings):
     doc_file_name: str
     vector_store: Union[MilvusSetting, FAISSSetting] = Field(..., discriminator="type")
+    embedding_model_type: Literal["onnx", "hf"]
     model_name: str
     quantization: bool = False
     device: str = "cpu"
@@ -57,7 +58,18 @@ def get_prompt_template(prompt_template_config: Dict):
     return prompt_template_fn, full_prompt_template
 
 
+def get_embedding_fn(embedding_cfgs):
+    from llm_retrieval_qa import vector_store
+
+    embedding_kwargs = {k: v for k, v in embedding_cfgs.items() if k not in ["__class_name__"]}
+    _embedding_fn = getattr(vector_store, embedding_cfgs["__class_name__"])
+    embedding_fn = _embedding_fn(**embedding_kwargs)
+    return embedding_fn
+
+
 settings = Settings()
 # get model config
 model_config = get_model_config(settings.model_name)
+embedding_type = settings.embedding_model_type
+model_config["embedding_cfgs"] = {**model_config["embedding_cfgs"][embedding_type]}
 vector_store_config = settings.vector_store

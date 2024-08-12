@@ -1,5 +1,45 @@
 
 
+embedding_type_config = {
+    "llama2": {
+        "onnx": {
+            "__class_name__": "OnnxEmbedding",
+            "model_path": "../models/text2vec-large-chinese-onnx/model.onnx",
+            "tokenizer_path": "../models/text2vec-large-chinese-onnx/tokenizer.json",
+            "tokenizer_cfg_path": "../models/text2vec-large-chinese-onnx/tokenizer_config.json",
+        },
+        "hf": {
+            "__class_name__": "HFEmbedding",
+            "model_path": "GanymedeNil/text2vec-large-chinese",
+        },
+    },
+    "llama3": {
+        "onnx": {
+            "__class_name__": "OnnxEmbedding",
+            "model_path": "../models/text2vec-large-chinese-onnx/model.onnx",
+            "tokenizer_path": "../models/text2vec-large-chinese-onnx/tokenizer.json",
+            "tokenizer_cfg_path": "../models/text2vec-large-chinese-onnx/tokenizer_config.json",
+        },
+        "hf": {
+            "__class_name__": "HFEmbedding",
+            "model_path": "GanymedeNil/text2vec-large-chinese",
+        },
+    },
+    "phi3": {
+        "onnx": {
+            "__class_name__": "OnnxEmbedding",
+            "model_path": "../models/text2vec-large-chinese-onnx/model.onnx",
+            "tokenizer_path": "../models/text2vec-large-chinese-onnx/tokenizer.json",
+            "tokenizer_cfg_path": "../models/text2vec-large-chinese-onnx/tokenizer_config.json",
+        },
+        "hf": {
+            "__class_name__": "HFEmbedding",
+            "model_path": "GanymedeNil/text2vec-large-chinese",
+        },
+    }
+}
+
+
 model_type_config = {
     "llama2": {
         "prompt_template": {
@@ -38,7 +78,6 @@ model_type_config = {
 
 model_configs_mapping = {
     "llama2-hf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "hf",
         "model_path": "../models/llama2-7b-chat",
         "model_type": "llama2",
@@ -59,7 +98,6 @@ model_configs_mapping = {
         "prompt_kwargs": {"add_bos": True},
     },
     "llama2-gguf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "gguf",
         "model_path": "../models/Llama-2-7B-Chat-GGUF/llama-2-7b-chat.Q6_K.gguf",
         "model_type": "llama2",
@@ -78,7 +116,6 @@ model_configs_mapping = {
         "prompt_kwargs": {"add_bos": True},
     },
     "llama3-hf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "hf",
         "model_path": "../models/Meta-Llama-3-8B-Instruct",
         "model_type": "llama3",
@@ -99,7 +136,6 @@ model_configs_mapping = {
         "prompt_kwargs": {"add_bos": True},
     },
     "llama3-gguf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "gguf",
         "model_path": "../models/Llama-3-8B-Instruct-GGUF/Llama-3-8B-Instruct-Q8_0.gguf",
         "model_type": "llama3",
@@ -118,7 +154,6 @@ model_configs_mapping = {
         "prompt_kwargs": {"add_bos": True},
     },
     "llama3.1-hf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "hf",
         "model_path": "../models/Meta-Llama-3.1-8B-Instruct",
         "model_type": "llama3",
@@ -139,7 +174,6 @@ model_configs_mapping = {
         "prompt_template": {"add_bos": True},
     },
     "llama3.1-gguf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "gguf",
         "model_path": "../models/Meta-Llama-3.1-8B-Instruct-GGUF/Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
         "model_type": "llama3",
@@ -158,7 +192,6 @@ model_configs_mapping = {
         "prompt_template": {"add_bos": True},
     },
     "phi3-mini-4k-hf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "hf",
         "model_path": "microsoft/Phi-3-mini-4k-instruct",
         "model_type": "phi3",
@@ -178,7 +211,6 @@ model_configs_mapping = {
         },
     },
     "phi3-mini-4k-gguf": {
-        "embedding_model_path": "GanymedeNil/text2vec-large-chinese",
         "format": "gguf",
         "model_path": "../models/Phi-3-mini-4k-instruct-gguf/Phi-3-mini-4k-instruct-q4.gguf",
         "model_type": "phi3",
@@ -202,4 +234,5 @@ def get_model_config(model_name):
     config = model_configs_mapping[model_name]
     model_type = config['model_type']
     config['prompt_template'] = {**model_type_config[model_type]["prompt_template"], **config.get('prompt_template', {})}
+    config['embedding_cfgs'] = {**embedding_type_config[model_type]}
     return config
