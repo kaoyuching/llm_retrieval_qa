@@ -8,7 +8,7 @@ import atexit
 from langchain_community.llms import LlamaCpp
 
 from llm_retrieval_qa.splitter import split_html
-from llm_retrieval_qa.vector_store import HFEmbedding, DbMilvus
+from llm_retrieval_qa.vector_store import OnnxEmbedding, DbMilvus
 from llm_retrieval_qa.pipeline.llm_prompt import PromptLlama2, PromptLlama3, Message
 
 r"""
@@ -29,7 +29,7 @@ taskset --cpu-list 0-20 python ./llm_retrievalqa_gguf.py
 # load reference dataset
 # filename = './example_files/nvidia_doc.html'
 filename = './example_files/sql_alchemy_doc_all.html'
-doc_fname = os.path.basename(settings.doc_file_name)
+doc_fname = os.path.basename(filename)
 headers_to_split_on = [
     ("h1", "Header 1"),
     ("h2", "Header 2"),
@@ -49,11 +49,15 @@ splits = split_html(
 
 
 # vector store: milvus
-model_name = "GanymedeNil/text2vec-large-chinese"
-hf_embedding = HFEmbedding(model_name, normalize_embeddings=True)
+embedding_fn = OnnxEmbedding(
+    "../models/text2vec-large-chinese-onnx/model.onnx",
+    "../models/text2vec-large-chinese-onnx/tokenizer.json",
+    "../models/text2vec-large-chinese-onnx/tokenizer_config.json",
+    normalize_embeddings=True,
+)
 
 vector_db = DbMilvus(
-    hf_embedding,
+    embedding_fn,
     "http://localhost:19530",
     db_name="docs_db",
     collection_name="data_collection"
