@@ -5,10 +5,9 @@ import warnings
 warnings.filterwarnings("ignore")
 import atexit
 
-from langchain_community.llms import LlamaCpp
-
 from llm_retrieval_qa.splitter import split_html
-from llm_retrieval_qa.vector_store import OnnxEmbedding, DbMilvus
+from llm_retrieval_qa.embeddings.onnx import OnnxEmbedding
+from llm_retrieval_qa.vector_store.milvus import DbMilvus
 from llm_retrieval_qa.pipeline.llm_prompt import PromptLlama2, PromptLlama3, Message
 
 r"""
