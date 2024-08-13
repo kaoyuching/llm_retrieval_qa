@@ -1,12 +1,12 @@
-## LLM Retrieval QA
+# LLM Retrieval QA
 
 Demonstrate retrieval QA with multiple documents that come from different file types.
 
-### Environment
+## Environment
 - [x] python >= 3.8
 
 
-### Prepare data
+## Prepare data
 #### Get `html` from URL
 
 Details are in [`html_parser.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/data_parser/html_parser.py)
@@ -25,7 +25,7 @@ Example data are from:
 TODO
 
 
-### Export model to onnx format
+## Export model to onnx format
 
 1. Convert with onnxruntime
 
@@ -40,7 +40,7 @@ $ optimum-cli export onnx --model "../models/Llama-2-7b-chat-hf" --task text-gen
 ```
 
 
-### Convert huggingface model to GGUF
+## Convert huggingface model to GGUF
 Use `convert_hf_to_gguf.py` in `llama.cpp` to export gguf model. It requires `torch ~= 2.2.1`.
 
 ```=shell
@@ -55,7 +55,7 @@ Llama3 GGUF models can get from: https://huggingface.co/doriskao/Llama-3-8B-Inst
 Llama3.1 GGUF models can get from: https://huggingface.co/doriskao/Meta-Llama-3.1-8B-Instruct-GGUF
 
 
-### Vector store
+## Vector store
 There are many ways to store embedded data and perform vector search. In this repository, I use FAISS / Milvus to store vectors.
 
 Run Milvus in Docker:
@@ -65,13 +65,13 @@ $ docker compose -f ./milvus-docker-compose.yml up -d
 ```
 
 
-### Example pipeline with `huggingface transformers` and `langchain`
+## Example pipeline with `huggingface transformers` and `langchain`
 Demo models: Llama2, Llama3, Llama3.1(need transformers >= 4.43.3), Phi3-mini
 
 See [`./examples/example_huggingface.py`](https://github.com/kaoyuching/llm_retrieval_qa/blob/master/examples/example_huggingface.py)
 
 
-### Example pipeline with `llama-cpp-python`
+## Example pipeline with `llama-cpp-python`
 Waring: llama gguf model runs on CPU spends a lot of time (few minutes compare to GPU).  
 
 Demo models: Llama2, Llama3, Llama3.1, Phi3-Mini
@@ -85,7 +85,7 @@ $ taskset --cpu-list [numerical list of processors] command
 ```
 
 
-### Run with `run_llm_retrievalqa.py`
+## Run with `run_llm_retrievalqa.py`
 1. Setup `.env` file. Here is the example (embedding using onnx model, language model using gguf model):
 
 ```
