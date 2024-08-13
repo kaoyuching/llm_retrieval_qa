@@ -1,5 +1,4 @@
-# from .onnx import OnnxEmbedding
-# from .huggingface import HFEmbedding
+
 
 def get_embedding_class(class_name):
     if class_name == "OnnxEmbedding":
