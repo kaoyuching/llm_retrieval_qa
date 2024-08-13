@@ -1,13 +1,12 @@
 from typing import Optional, Dict
-from langchain_core.documents import Document
-from langchain_community.vectorstores import FAISS
-from langchain_community.vectorstores.utils import DistanceStrategy
 from langchain.prompts import PromptTemplate
 
 from llm_retrieval_qa.timeit import time_it
 
 
 def similarity_search_faiss(vector_db, question, top_k: int = 10, threshold=None):
+    from langchain_community.vectorstores.utils import DistanceStrategy
+
     query_docs = vector_db.similarity_search_with_score(
         question,
         k=top_k,

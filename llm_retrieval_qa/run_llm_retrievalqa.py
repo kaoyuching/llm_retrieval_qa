@@ -4,13 +4,9 @@ sys.path.append("./")
 import warnings
 warnings.filterwarnings("ignore")
 
-from langchain_community.vectorstores import FAISS
-from langchain_community.vectorstores.utils import DistanceStrategy
-
 from llm_retrieval_qa.configs import settings, model_config, vector_store_config,\
     get_prompt_template, get_embedding_fn
 from llm_retrieval_qa.splitter import split_html
-from llm_retrieval_qa.vector_store import DbMilvus
 from llm_retrieval_qa.pipeline.model_loader import load_model
 
 
@@ -51,6 +47,8 @@ embedding_fn = get_embedding_fn(model_config["embedding_cfgs"])
 
 # vector store
 if vector_store_config.type == "milvus":
+    from llm_retrieval_qa.vector_store.milvus import DbMilvus
+
     vector_db = DbMilvus(
         embedding_fn,
         vector_store_config.uri,
@@ -64,6 +62,9 @@ if vector_store_config.type == "milvus":
     if len(exist_docs) == 0:
         _ = vector_db.create(texts, doc_fname=doc_fname)
 elif vector_store_config.type == "faiss":
+    from langchain_community.vectorstores import FAISS
+    from langchain_community.vectorstores.utils import DistanceStrategy
+
     vector_db = FAISS.from_documents(
         splits,
         embedding_fn,
