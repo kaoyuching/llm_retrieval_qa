@@ -185,3 +185,12 @@ class PromptPhi3(PromptBase):
             template=full_prompt_template,
         )
         return prompt_template, full_prompt_template
+
+
+def get_qa_prompt(prompt_template, question, contexts):
+    if len(contexts) == 0:
+        contexts = "Found nothing in the documents"
+    else:
+        contexts = '\n'.join(contexts)
+    input_prompt = prompt_template.format(context=contexts, question=question)
+    return input_prompt

@@ -2,15 +2,7 @@ from typing import Optional, Dict
 from langchain.prompts import PromptTemplate
 
 from llm_retrieval_qa.timeit import time_it
-
-
-def get_qa_prompt(prompt_template, question, contexts):
-    if len(contexts) == 0:
-        contexts = "Found nothing in the documents"
-    else:
-        contexts = '\n'.join(contexts)
-    input_prompt = prompt_template.format(context=contexts, question=question)
-    return input_prompt
+from llm_retrieval_qa.pipeline.llm_prompt import get_qa_prompt
 from llm_retrieval_qa.pipeline.search import similarity_search
 
 
