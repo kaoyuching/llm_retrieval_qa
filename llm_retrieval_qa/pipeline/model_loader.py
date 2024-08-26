@@ -46,7 +46,7 @@ def load_model(
 
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.float16 if device!='cpu' else torch.float32,
             **model_kwargs,
         )
     return model
