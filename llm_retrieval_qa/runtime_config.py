@@ -95,6 +95,11 @@ model_configs_mapping = {
             "repetition_penalty": 1.1,
             "return_full_text": False,
         },
+        "streamer": {
+            "skip_prompt": True,
+            "skip_special_tokens": True,
+            "trust_remote_code": True,
+        },
         "prompt_kwargs": {"add_bos": True},
     },
     "llama2-gguf": {
@@ -113,6 +118,7 @@ model_configs_mapping = {
             "repeat_penalty": 1.1,
             "echo": False,
         },
+        "streamer": {},
         "prompt_kwargs": {"add_bos": True},
     },
     "llama3-hf": {
@@ -131,7 +137,13 @@ model_configs_mapping = {
             "temperature": 0.0,
             "do_sample": False,
             "repetition_penalty": 1.1,
+            "top_p": 1,
             "return_full_text": False,
+        },
+        "streamer": {
+            "skip_prompt": True,
+            "skip_special_tokens": True,
+            "trust_remote_code": True,
         },
         "prompt_kwargs": {"add_bos": True},
     },
@@ -151,6 +163,7 @@ model_configs_mapping = {
             "repeat_penalty": 1.1,
             "echo": False,
         },
+        "streamer": {},
         "prompt_kwargs": {"add_bos": True},
     },
     "llama3.1-hf": {
@@ -171,6 +184,11 @@ model_configs_mapping = {
             "repetition_penalty": 1.1,
             "return_full_text": False,
         },
+        "streamer": {
+            "skip_prompt": True,
+            "skip_special_tokens": True,
+            "trust_remote_code": True,
+        },
         "prompt_template": {"add_bos": True},
     },
     "llama3.1-gguf": {
@@ -189,6 +207,7 @@ model_configs_mapping = {
             "repeat_penalty": 1.1,
             "echo": False,
         },
+        "streamer": {},
         "prompt_template": {"add_bos": True},
     },
     "phi3-mini-4k-hf": {
@@ -209,6 +228,11 @@ model_configs_mapping = {
             "repetition_penalty": 1.1,
             "return_full_text": False,
         },
+        "streamer": {
+            "skip_prompt": True,
+            "skip_special_tokens": True,
+            "trust_remote_code": True,
+        },
     },
     "phi3-mini-4k-gguf": {
         "format": "gguf",
@@ -226,6 +250,7 @@ model_configs_mapping = {
             "repeat_penalty": 1.1,
             "echo": False,
         },
+        "streamer": {}
     },
 }
 
