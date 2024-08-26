@@ -94,7 +94,7 @@ if model_config["format"] == "hf":
     from langchain_huggingface import HuggingFacePipeline
     from llm_retrieval_qa.pipeline.chain import QAChain
 
-    tokenizer = AutoTokenizer.from_pretrained(llm_model_path)
+    tokenizer = AutoTokenizer.from_pretrained(model_config["model_path"])
     hf_pipeline = pipeline(
         "text-generation",
         model=model,
