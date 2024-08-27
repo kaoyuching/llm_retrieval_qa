@@ -170,7 +170,7 @@ class PromptPhi3(PromptBase):
         r"""
         content: [{role: ..., content: ...}]
         """
-        full_prompt_template = self.system_prompt + self.B_ASST
+        full_prompt_template = self.system_prompt
         for message in messages:
             if message.role == "user":
                 full_prompt_template += self.B_ROLE + message.content + self.END
