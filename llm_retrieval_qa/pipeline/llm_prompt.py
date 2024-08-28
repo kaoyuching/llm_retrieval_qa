@@ -103,6 +103,7 @@ class PromptLlama3(PromptBase):
     B_ROLE = "<|start_header_id|>"
     E_ROLE = "<|end_header_id|>\n\n"
     E_INPUT = "<|eot_id|>\n"
+    EOS = "<|end_of_text|>"
 
     def __init__(self, system_prompt: Optional[str] = None):
         self.system_prompt = "You are a helpful AI assistant"
@@ -155,6 +156,7 @@ class PromptPhi3(PromptBase):
     B_ROLE = "<|user|>\n"
     B_ASST = "<|assistant|>\n"
     END = "<|end|>\n"
+    EOS = "<|endoftext|>"
 
     def __init__(self, system_prompt: Optional[str] = None):
         self.system_prompt = "You are a helpful assistant."
