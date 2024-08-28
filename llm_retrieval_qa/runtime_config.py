@@ -117,8 +117,16 @@ model_configs_mapping = {
             "top_p": 1,
             "repeat_penalty": 1.1,
             "echo": False,
+            "stop": ['</s>'],
         },
-        "streamer": {},
+        "generate": {
+            "temp": 0.0,
+            "top_p": 1,
+            "repeat_penalty": 1.1,
+            "max_tokens": 2048,
+            "stop": ['</s>'],
+        },
+        "streamer": {'timeout': None},
         "prompt_kwargs": {"add_bos": True},
     },
     "llama3-hf": {
@@ -162,8 +170,16 @@ model_configs_mapping = {
             "top_p": 1,
             "repeat_penalty": 1.1,
             "echo": False,
+            "stop": ['<|eot_id|>', '<|end_of_text|>'],
         },
-        "streamer": {},
+        "generate": {
+            "temp": 0.0,
+            "top_p": 1,
+            "repeat_penalty": 1.1,
+            "max_tokens": 2048,
+            "stop": ['<|eot_id|>', '<|end_of_text|>'],
+        },
+        "streamer": {'timeout': None},
         "prompt_kwargs": {"add_bos": True},
     },
     "llama3.1-hf": {
@@ -206,8 +222,16 @@ model_configs_mapping = {
             "top_p": 1,
             "repeat_penalty": 1.1,
             "echo": False,
+            "stop": ['<|eot_id|>', '<|end_of_text|>'],
         },
-        "streamer": {},
+        "generate": {
+            "temp": 0.0,
+            "top_p": 1,
+            "repeat_penalty": 1.1,
+            "max_tokens": 2048,
+            "stop": ['<|eot_id|>', '<|end_of_text|>'],
+        },
+        "streamer": {"timeout": None},
         "prompt_template": {"add_bos": True},
     },
     "phi3-mini-4k-hf": {
@@ -249,8 +273,16 @@ model_configs_mapping = {
             "top_p": 1,
             "repeat_penalty": 1.1,
             "echo": False,
+            "stop": ['<|end|>', '<|endoftext|>'],
         },
-        "streamer": {}
+        "generate": {
+            "temp": 0.0,
+            "top_p": 1,
+            "repeat_penalty": 1.1,
+            "max_tokens": 2048,
+            "stop": ['<|end|>', '<|endoftext|>'],
+        },
+        "streamer": {"timeout": None}
     },
 }
 
