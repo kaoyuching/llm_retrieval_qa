@@ -2,10 +2,14 @@ from typing import Dict, Optional, Literal, Union
 import copy
 from pydantic import Field, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import find_dotenv, load_dotenv
 
 from llm_retrieval_qa.pipeline import llm_prompt
 from llm_retrieval_qa.pipeline.llm_prompt import Message
 from llm_retrieval_qa.runtime_config import get_model_config
+
+
+load_dotenv(find_dotenv(".env"))
 
 
 class VectorStoreSetting(BaseModel):
@@ -36,7 +40,6 @@ class Settings(BaseSettings):
     example_question_file: Optional[str] = None
 
     model_config = SettingsConfigDict(
-        env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="allow",
