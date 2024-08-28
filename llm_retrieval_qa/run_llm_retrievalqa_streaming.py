@@ -88,42 +88,53 @@ print("prompt:\n", full_prompt_template)
 model = load_model(model_config, settings.quantization, settings.device)
 top_k = settings.search_topk
 
-# if model_config["format"] == "hf":
-from transformers import AutoTokenizer
-from llm_retrieval_qa.pipeline.streaming import QAHFStreamer, generate_response
+if model_config["format"] == "hf":
+    from transformers import AutoTokenizer
+    from llm_retrieval_qa.pipeline.streaming import QAHFStreamer, generate_response
 
 
-tokenizer = AutoTokenizer.from_pretrained(model_config["model_path"])
+    tokenizer = AutoTokenizer.from_pretrained(model_config["model_path"])
 
-streamer_config = {
-    'args': (tokenizer,),
-    'kwargs': model_config["streamer"]
-}
+    streamer_config = {
+        'args': (tokenizer,),
+        'kwargs': model_config["streamer"]
+    }
 
-if 'return_full_text' in llm_model_runtime_kwargs:
-    llm_model_runtime_kwargs.pop('return_full_text')
+    if 'return_full_text' in llm_model_runtime_kwargs:
+        llm_model_runtime_kwargs.pop('return_full_text')
 
-model_kwargs = dict(
-    bos_token_id=tokenizer.bos_token_id,
-    eos_token_id=tokenizer.eos_token_id,
-    pad_token_id=tokenizer.eos_token_id,
-    **llm_model_runtime_kwargs,
-)
+    model_kwargs = dict(
+        bos_token_id=tokenizer.bos_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+        pad_token_id=tokenizer.eos_token_id,
+        **llm_model_runtime_kwargs,
+    )
 
-qa_streaming = QAHFStreamer(
-    tokenizer,
-    model,
-    streamer_config,
-    vector_db,
-    prompt_template_fn,
-    top_k=10,
-    return_source_documents=False,
-    similarity_score_threshold=None,
-    model_kwargs=model_kwargs,
-    device=settings.device,
-)
+    qa_streaming = QAHFStreamer(
+        tokenizer,
+        model,
+        streamer_config,
+        vector_db,
+        prompt_template_fn,
+        top_k=top_k,
+        return_source_documents=False,
+        similarity_score_threshold=None,
+        model_kwargs=model_kwargs,
+        device=settings.device,
+    )
+elif model_config["format"] == "gguf":
+    from llm_retrieval_qa.pipeline.streaming import LlamaCppStreamer, generate_response
 
-# TODO: llama_cpp streaming
+    qa_streaming = LlamaCppStreamer(
+        model,
+        vector_db,
+        prompt_template_fn,
+        streamer_cfg=model_config["streamer"],
+        top_k=top_k,
+        return_source_documents=False,
+        similarity_score_threshold=None,
+        model_kwargs=model_config["generate"],
+    )
 
 
 # run examples
@@ -138,7 +149,7 @@ if example_fname:
         print("Answer:")
         qa_streaming(question)
         for x in generate_response(qa_streaming.streamer):
-            print(x, end="")
+            print(x, end="", flush=True)
         print('')
 else:
     while True:
@@ -148,5 +159,5 @@ else:
         print("Answer:")
         qa_streaming(question)
         for x in generate_response(qa_streaming.streamer):
-            print(x, end="")
+            print(x, end="", flush=True)
         print('')
