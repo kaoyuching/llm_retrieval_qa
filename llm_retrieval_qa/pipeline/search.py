@@ -1,22 +1,19 @@
 
 
 def similarity_search_faiss(vector_db, question, top_k: int = 10, threshold=None):
-    from langchain_community.vectorstores.utils import DistanceStrategy
-
     query_docs = vector_db.similarity_search_with_score(
         question,
         k=top_k,
-        distance_strategy=DistanceStrategy.COSINE,
     )
 
     doc_str = []
     contexts = []
     scores = []
-    for _doc, _score in query_docs:
+    for doc in query_docs:
         if threshold is None or _score <= threshold:
-            doc_str.append(_doc)
-            contexts.append(_doc.page_content)
-        scores.append(_score)
+            doc_str.append(doc["text"])
+            contexts.append(doc["text"])
+        scores.append(doc["distance"])
     return doc_str, contexts, scores
 
 

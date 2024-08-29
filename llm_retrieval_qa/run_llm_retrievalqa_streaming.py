@@ -62,20 +62,14 @@ if vector_store_config.type == "milvus":
     if len(exist_docs) == 0:
         _ = vector_db.create(texts, doc_fname=doc_fname)
 elif vector_store_config.type == "faiss":
-    from langchain_community.vectorstores import FAISS
-    from langchain_community.vectorstores.utils import DistanceStrategy
+    from llm_retrieval_qa.vector_store.faiss import DbFAISS
 
-    vector_db = FAISS.from_documents(
-        splits,
-        embedding_fn,
-        distance_strategy=DistanceStrategy.COSINE,
-    )
+    vector_db = DbFAISS(embedding_fn, vector_store_config.uri, normalize=True)
 
-    retriever = vector_db.as_retriever(
-        # search_type='similarity',  # mmr
-        search_type='mmr',  # mmr
-        search_kwarg={'k': 20},
-    )
+    if not vector_db.check_by_doc_fname(doc_fname) or doc_fname == "default":
+        texts = [x.dict()["page_content"] for x in splits]
+        _ = vector_db.create(texts, doc_fname=doc_fname)
+        vector_db.save_local(vector_store_config.uri)
 else:
     raise ValueError("Invallid vector database")
 

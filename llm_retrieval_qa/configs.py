@@ -25,7 +25,7 @@ class MilvusSetting(VectorStoreSetting):
 
 class FAISSSetting(VectorStoreSetting):
     type: Literal["faiss"] = "faiss"
-    db_name: str
+    uri: str
 
 
 class Settings(BaseSettings):
