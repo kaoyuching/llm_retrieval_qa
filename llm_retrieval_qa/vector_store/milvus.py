@@ -77,7 +77,7 @@ class DbMilvus():
         search single question
 
         Return:
-            - id, distance, entity
+            - id, distance, entity[text, metadata]
         """
         vector = self.embedding_fn.embedding([data])  # shape: (batch, embedding size)
         res = self.client.search(
@@ -86,7 +86,7 @@ class DbMilvus():
             limit=top_k,
             output_fields=["text", "doc_fname"],
             search_params={"metric_type": "COSINE"}
-        )
+        )  # search_res, extra_info
         return res[0]
 
     def get(self, filter: str = ""):
