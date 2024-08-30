@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <title>LLM QA</title>
+  </head>
+  <body>
+    <!--<form method="GET">-->
+      <!--<button onclick="start()">Start</button>-->
+    <!--</form>-->
+
+    <input id="questionInput" type="text" placeholder="Enter question">
+    <button id="sendbtn">Send</button>
+    <div id="question-section"></div>
+    <div id="response-section"></div>
+  </body>
+  <script>
+    var input = document.getElementById('questionInput');
+    var button = document.getElementById('sendbtn');
+    var response = document.getElementById('response-section');
+    var question = document.getElementById('question-section');
+
+    button.addEventListener('click', function() {
+      var message = input.value;
+      var url = '/answer_stream?question=' + encodeURIComponent(message);
+      
+      <!--clear the input and response area-->
+      question.innerHTML = input.value;
+      response.innerHTML = '';
+      input.value = '';
+
+      const source = new EventSource(
+        url,
+        {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+          },
+          heartbeatTimeout: 120000,
+        }
+      );
+
+      console.log(source)
+      source.onopen = function (e) {
+        console.log("open connection");
+      };
+      source.onmessage = function (e) {
+        console.log(e)
+        response.innerHTML += e.data + '<br>';
+        console.log(response.innerHTML);
+      };
+      source.onerror = (error) => {
+        console.log('EventSource failed', error)
+        source.close();
+      }
+    });
+  </script>
+  <style>
+    #question-section {
+      height: 20px;
+      width: 700px;
+      background: #FFEAFF;
+    }
+    #response-section {
+      height: 100px;
+      width: 700px;
+      background: #EAFFFF;
+    }
+  </style>
+</html>

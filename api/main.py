@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from llm_retrieval_qa.configs import settings, model_config, vector_store_config,\
     get_prompt_template, get_embedding_fn
@@ -11,6 +12,9 @@ from api.routers import router
 
 app = FastAPI()
 app.include_router(router)
+
+app.mount("/static", StaticFiles(directory="api/static"), name="static")
+
 
 # embedding
 emb_cfg = model_config["embedding_cfgs"]
@@ -98,6 +102,6 @@ async def generator(question: str):
         yield x
 
 
-@app.get('/answer_stream/')
+@app.get('/answer_stream')
 async def stream(question: str = Query()):
     return StreamingResponse(generator(question), media_type="text/event-stream")
