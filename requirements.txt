@@ -1,3 +1,4 @@
+dill
 pydantic
 pydantic-settings
 
@@ -5,8 +6,7 @@ CairoSVG
 lxml
 beautifulsoup4
 
-transformers
+tokenizers
+onnx
+onnxruntime
 langchain
-langchain_community
-langchain_core
-langchain_huggingface
