@@ -1,13 +1,17 @@
 from typing import List
 import json
+import re
 import numpy as np
 
 from tokenizers import Tokenizer
 import onnx
+from onnx.mapping import TENSOR_TYPE_MAP
 import onnxruntime
 
 
 class OnnxEmbedding():
+    _tensor_type_mapping = {v.name.split('.')[-1].lower(): v.np_dtype for k, v in TENSOR_TYPE_MAP.items()}
+
     def __init__(self, model_path: str, tokenizer_path: str, tokenizer_cfg_path: str, normalize_embeddings: bool = True, device_map: str = "cpu"):
         self.device = device_map
         with open(tokenizer_cfg_path, "r") as f:
@@ -38,12 +42,25 @@ class OnnxEmbedding():
             if 'position_embeddings' in _init.name:
                 self.pos_emb_dim = _init.dims[0]
 
+    def _tensor_dtype_to_np_dtype(self, type_name: str):
+        r"""
+        'tensor(float)' -> np.float64
+        """
+        str_type = re.search('(?<=tensor\()\w*', type_name).group(0)
+        return self._tensor_type_mapping[str_type]
+
     def encode(self, sentences: List[str]) -> List[float]:
+        r"""
+        convert string to tokens
+        """
         sentences = list(map(lambda x: x.replace("\n", " "), sentences))
         encoded_input = self.tokenizer.encode_batch(sentences)
         return encoded_input
 
     def encode_post_process(self, encoded_res: List):
+        r"""
+        convert tokens to onnx input
+        """
         input_ids = []
         attention_mask = []
         token_type_ids = []
@@ -54,11 +71,16 @@ class OnnxEmbedding():
         input_ids = np.stack(input_ids, axis=0)
         attention_mask = np.stack(attention_mask, axis=0)
         token_type_ids = np.stack(token_type_ids, axis=0)
-        return {
+        data = {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
             "token_type_ids": token_type_ids,
         }
+        onnx_input_data = {
+            node.name: data[node.name].astype(self._tensor_dtype_to_np_dtype(node.type))
+            for node in self.model.get_inputs()
+        }
+        return onnx_input_data
 
     def embedding(self, sentences: List[str]):
         encoded_input = self.encode(sentences)
