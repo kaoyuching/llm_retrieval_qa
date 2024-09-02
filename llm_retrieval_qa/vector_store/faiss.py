@@ -69,6 +69,7 @@ class DbFAISS():
     def create(self, texts: List[str], doc_fname: str = "default"):
         # create search vectors
         vectors = self.embedding_fn.embedding(texts)
+        vectors = vectors.astype(np.float32)  # TypeError: in method 'fvec_renorm_L2', argument 3 of type 'float *'
         # if normalize
         if self.normalize:
             faiss.normalize_L2(vectors)
@@ -91,6 +92,7 @@ class DbFAISS():
             - [{id, distance, text}]
         """
         search_vectors = self.embedding_fn.embedding([search_text])
+        search_vectors = search_vectors.astype(np.float32)
         faiss.normalize_L2(search_vectors)
         k = self.index.ntotal if k is None else k  # k means find nearest k documents
         D, I = self.index.search(search_vectors, k=k)  # return Distance, Index; example [[D1, D2]], [[I1, I2]]
