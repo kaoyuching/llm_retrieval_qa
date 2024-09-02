@@ -12,12 +12,13 @@ embedding_fn = get_embedding_fn(model_config["embedding_cfgs"])
 @router.post("/upload_doc/")
 async def upload_doc(
     file: UploadFile,
-    chunksize: int = 500,
+    chunk_size: int = 500,
     chunk_overlap: int = 30,
     vector_store_type: str = 'faiss',
 ):
-    filename = file.filename
-    contents = file.read()
+    doc_fname = file.filename
+    contents = await file.read()
+    contents = contents.decode()
 
     headers_to_split_on = [
         ("h1", "Header 1"),
@@ -64,4 +65,4 @@ async def upload_doc(
             vector_db.save_local(vector_store_config.uri)
     else:
         vector_db = None
-    return {"documents": splits, 'vector_db': vector_db}
+    return {"documents": splits}
