@@ -99,6 +99,8 @@ class DbFAISS():
 
         search_res = []
         for dist, idx in zip(D[0], I[0]):
+            if idx == -1:
+                continue
             _text = self.docid_to_doc[self.index_to_docid[idx]]
             _res = {'id': idx, 'distance': dist, 'text': _text}
             search_res.append(_res)
