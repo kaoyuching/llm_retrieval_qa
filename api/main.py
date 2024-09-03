@@ -60,6 +60,7 @@ if model_config["format"] == "hf":
         'kwargs': model_config["streamer"]
     }
 
+    llm_model_runtime_kwargs = model_config["runtime"]
     if 'return_full_text' in llm_model_runtime_kwargs:
         llm_model_runtime_kwargs.pop('return_full_text')
 
