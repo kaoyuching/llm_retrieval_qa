@@ -11,8 +11,13 @@
     <input id="questionInput" type="text" placeholder="Enter question">
     <button id="sendbtn">Send</button>
     <div id="question-section"></div>
-    <div id="response-section">
-      <textarea id="response"></textarea>
+    <div id="response-section" class="resp">
+      <textarea id="response" class="text-resp"></textarea>
+    </div>
+
+    <div id="ws">Use websocket</div>
+    <div id="ws-response-section" class="resp">
+      <textarea id="ws-response" class="text-resp"></textarea>
     </div>
   </body>
   <script>
@@ -31,10 +36,11 @@
       var url = '/answer_stream?question=' + encodeURIComponent(message);
       
       //clear the input and response area
-      question.innerHTML = input.value;
+      question.innerHTML = message;
       response.innerHTML = '';
       input.value = '';
 
+      //server sent events: event sources
       const source = new EventSource(
         url,
         {
@@ -65,8 +71,24 @@
         console.log('EventSource failed', error)
         source.close();
       }
+
+      //websocket
+      var host = window.location.host;
+      var wsurl = `${host}/answer_stream_ws`
+      var wsresponse = document.getElementById('ws-response');
+      wsresponse.innerHTML = '';
+
+      var ws = new WebSocket("ws://" + wsurl);
+      ws.onopen = function() {
+        ws.send(message);
+      };
+      ws.onmessage = function(e) {
+        var text_json = JSON.parse(e.data);
+        wsresponse.innerHTML += text_json.text;
+      };
     });
 
+    //upload file to vector database
     var uploadButton = document.getElementById('uploadbtn');
 
     uploadButton.addEventListener('click', function () {
@@ -103,7 +125,7 @@
       padding-left: 10px;
       padding-right: 10px;
     }
-    #response-section {
+    .resp {
       height: 300px;
       width: 700px;
       background: #d9d7f1;
@@ -111,7 +133,7 @@
       border-radius:10px;
       padding: 10px;
     }
-    #response {
+    .text-resp {
       height: 100%;
       width: 100%;
       padding: 0;
