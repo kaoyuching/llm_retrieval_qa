@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -99,7 +100,8 @@ elif model_config["format"] == "gguf":
 async def generator(question: str):
     qa_streaming(question)
     for x in qa_streaming.streamer:
-        yield x
+        data = {'text': x, 'dummy': 'abc'*10000}
+        yield f"event: message\ndata: {json.dumps(data)}\n\n"
 
 
 @app.get('/answer_stream')
