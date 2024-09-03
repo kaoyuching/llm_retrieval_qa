@@ -138,7 +138,7 @@ class DbFAISS():
         return remove_docs
 
     def _gen_uuid(self, n: int, exist_ids: Optional[Set] = None):
-        if len(exist_ids) == 0 or exists_ids is None:
+        if len(exist_ids) == 0 or exist_ids is None:
             return [str(uuid.uuid4()) for _ in range(n)]
 
         doc_ids = []
