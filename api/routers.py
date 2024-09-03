@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, File
 
 from llm_retrieval_qa.splitter import split_html
 from llm_retrieval_qa.configs import model_config, get_embedding_fn, vector_store_config
@@ -11,7 +11,7 @@ embedding_fn = get_embedding_fn(model_config["embedding_cfgs"])
 
 @router.post("/upload_doc/")
 async def upload_doc(
-    file: UploadFile,
+    file: UploadFile = File(...),
     chunk_size: int = 500,
     chunk_overlap: int = 30,
     vector_store_type: str = 'faiss',
