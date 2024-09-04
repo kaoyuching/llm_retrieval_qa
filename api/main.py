@@ -130,3 +130,4 @@ async def websocket_stream(websocket: WebSocket):
         except (WebSocketDisconnect, ConnectionClosedOK):
             print('ws Disconnected!', flush=True)
             break
+    await websocket.close()

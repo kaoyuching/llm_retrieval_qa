@@ -6,18 +6,18 @@
     <div id="uploadfile-section">
       Upload document to vector store
       <input id="choosefile" type="file">
-      <button id="uploadbtn">Upload</button>
+      <button id="uploadbtn" class="btn">Upload</button>
     </div>
     <input id="questionInput" type="text" placeholder="Enter question">
-    <button id="sendbtn">Send</button>
+    <button id="sendbtn" class="btn">Send</button>
     <div id="question-section"></div>
     <div id="response-section" class="resp">
-      <textarea id="response" class="text-resp"></textarea>
+      <textarea id="response" class="text-resp" readonly></textarea>
     </div>
 
     <div id="ws">Use websocket</div>
     <div id="ws-response-section" class="resp">
-      <textarea id="ws-response" class="text-resp"></textarea>
+      <textarea id="ws-response" class="text-resp" readonly></textarea>
     </div>
   </body>
   <script>
@@ -86,6 +86,18 @@
         var text_json = JSON.parse(e.data);
         wsresponse.innerHTML += text_json.text;
       };
+
+      we.onclose = function (e) {
+        if (e.wasClean) {
+          alert('[close] Connection closed cleanly, code=${e.code} reason=${e.reason}');
+        } else {
+          alert('[close] Connection died');
+        }
+      };
+
+      ws.onerror = function (error) {
+        console.log("on error");
+      };
     });
 
     //upload file to vector database
@@ -112,9 +124,22 @@
     }
     #questionInput {
       height: 30px;
+      width: 650px;
       padding: 5px;
       margin-bottom: 10px;
       border-radius:5px;
+    }
+    .btn {
+      margin-left: 5px;
+      margin-right: 5px;
+      background-color: #7DC5F6;
+      border: none;
+      color: white;
+      padding: 5px 5px;
+      border-radius: 5px;
+    }
+    .btn:hover {
+      background-color: #4D95F2;
     }
     /*question section*/
     #question-section {
