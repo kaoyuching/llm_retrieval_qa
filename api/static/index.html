@@ -41,7 +41,6 @@
       input.value = '';
 
       //server sent events: event sources
-      /*
       const source = new EventSource(
         url,
         {
@@ -64,7 +63,6 @@
       source.addEventListener('message', function (e) {
         console.log(e.data)
         var text_json = JSON.parse(e.data);
-        console.log(text_json)
         response.innerHTML += text_json.text;
       })
 
@@ -72,7 +70,6 @@
         console.log('EventSource failed', error)
         source.close();
       }
-     */
 
       //websocket
       var host = window.location.host;
@@ -120,7 +117,7 @@
     uploadButton.addEventListener('click', function () {
       console.log('click');
       //disable button on click
-      uploadButton.disable = true;
+      uploadButton.setAttribute('disabled', true);
 
       //const chooseFile = document.getElementById("choosefile");
       console.log(chooseFile.value);
@@ -133,17 +130,17 @@
         body: formdata,
         headers: {},
         method: "post",
-        })
-        .then(function (response) {
-          if (response.ok) {
-              var p = document.createElement("p");
-              p.textContent = "Finish!";
-              p.setAttribute("style", "display: inline");
-              uploadFileSection.append(p);
-          }
-        });
-      //enable button when finish
-      uploadButton.disable = false;
+      })
+      .then(function (response) {
+        if (response.ok) {
+            var p = document.createElement("p");
+            p.textContent = "Finish!";
+            p.setAttribute("style", "display: inline");
+            uploadFileSection.append(p);
+        }
+        //enable button when finish
+        uploadButton.removeAttribute('disabled');
+      });
     })
   </script>
   <style>
@@ -165,9 +162,14 @@
       color: white;
       padding: 5px 5px;
       border-radius: 5px;
+      cursor: pointer;
     }
     .btn:hover {
       background-color: #7DC5F6;
+    }
+    .btn:disabled {
+      background-color: #8698af;
+      cursor: not-allowed;
     }
     /*question section*/
     #question-section {
