@@ -129,8 +129,8 @@ async def websocket_stream(websocket: WebSocket):
             await websocket.send_json(text)
         except (WebSocketDisconnect, ConnectionClosedOK):
             print('ws Disconnected!', flush=True)
-            # break
+            break
         except Exception as e:
             print(e, flush=True)
-            # break
-    # await websocket.close()
+            break
+    await websocket.close()
