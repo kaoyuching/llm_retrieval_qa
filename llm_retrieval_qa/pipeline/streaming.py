@@ -95,7 +95,7 @@ class LlamaCppStreamer():
         self.top_k = top_k
         self.return_source_documents = return_source_documents
         self.threshold = similarity_score_threshold
-        self.model_kwargs = model_kwargs
+        self.model_kwargs = {**model_kwargs}
         self.max_tokens = self.model_kwargs.pop("max_tokens") if "max_tokens" in self.model_kwargs else 16
         stop = self.model_kwargs.pop("stop") if "stop" in self.model_kwargs else []
         self.stop_tokens = self.llm_model.tokenize(''.join(stop).encode("utf-8"), add_bos=False, special=True)
