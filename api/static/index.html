@@ -41,6 +41,7 @@
       input.value = '';
 
       //server sent events: event sources
+      /*
       const source = new EventSource(
         url,
         {
@@ -71,6 +72,7 @@
         console.log('EventSource failed', error)
         source.close();
       }
+     */
 
       //websocket
       var host = window.location.host;
@@ -87,11 +89,11 @@
         wsresponse.innerHTML += text_json.text;
       };
 
-      we.onclose = function (e) {
+      ws.onclose = function (e) {
         if (e.wasClean) {
-          alert('[close] Connection closed cleanly, code=${e.code} reason=${e.reason}');
+          alert(`[close] Connection closed cleanly, code=${e.code} reason=${e.reason}`);
         } else {
-          alert('[close] Connection died');
+          alert(`[close] Connection died`);
         }
       };
 
@@ -101,11 +103,27 @@
     });
 
     //upload file to vector database
+    var uploadFileSection = document.getElementById('uploadfile-section');
+    var chooseFile = document.getElementById('choosefile');
     var uploadButton = document.getElementById('uploadbtn');
+
+    chooseFile.addEventListener('change', function () {
+      console.log('change');
+      var plist = uploadFileSection.getElementsByTagName('p');
+      if (plist.length > 0) {
+        for (const node of plist) {
+          uploadFileSection.removeChild(node);
+        };
+      };
+    });
 
     uploadButton.addEventListener('click', function () {
       console.log('click');
-      const chooseFile = document.getElementById("choosefile");
+      //disable button on click
+      uploadButton.disable = true;
+
+      //const chooseFile = document.getElementById("choosefile");
+      console.log(chooseFile.value);
       console.log(chooseFile.files[0]);
       const formdata = new FormData();
       formdata.append('file', chooseFile.files[0]);
@@ -115,7 +133,17 @@
         body: formdata,
         headers: {},
         method: "post",
-      });
+        })
+        .then(function (response) {
+          if (response.ok) {
+              var p = document.createElement("p");
+              p.textContent = "Finish!";
+              p.setAttribute("style", "display: inline");
+              uploadFileSection.append(p);
+          }
+        });
+      //enable button when finish
+      uploadButton.disable = false;
     })
   </script>
   <style>
@@ -132,14 +160,14 @@
     .btn {
       margin-left: 5px;
       margin-right: 5px;
-      background-color: #7DC5F6;
+      background-color: #4D95F2;
       border: none;
       color: white;
       padding: 5px 5px;
       border-radius: 5px;
     }
     .btn:hover {
-      background-color: #4D95F2;
+      background-color: #7DC5F6;
     }
     /*question section*/
     #question-section {
