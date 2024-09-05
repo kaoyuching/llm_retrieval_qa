@@ -84,6 +84,9 @@ class DbFAISS():
             self.doc_fname_to_docid[doc_fname] = self.doc_fname_to_docid[doc_fname].extend(list(docid_to_doc.keys()))
         return {'update': len(texts), 'docid_to_doc': docid_to_doc, 'index_to_docid': index_to_docid}
 
+    def get_by_id(self, idx: int) -> np.ndarray:
+        return self.index.reconstruct(idx)
+
     def similarity_search_with_score(self, search_text: str, k: Optional[int] = None) -> List[Dict]:
         r"""
         Search a single question
