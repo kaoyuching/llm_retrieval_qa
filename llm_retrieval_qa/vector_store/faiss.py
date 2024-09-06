@@ -91,6 +91,8 @@ class DbFAISS():
         r"""
         Search a single question
 
+        Distances in IndexFlatL2 are computed with d(x,y)=||x||^2 + ||y||^2 -2*<x, y>
+
         Return:
             - [{id, distance, text}]
         """
