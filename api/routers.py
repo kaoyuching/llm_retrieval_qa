@@ -1,6 +1,8 @@
+import os
+import io
 from fastapi import APIRouter, UploadFile, File
 
-from llm_retrieval_qa.splitter import split_html
+from llm_retrieval_qa.splitter import split_html, DataSplitter
 from llm_retrieval_qa.configs import model_config, get_embedding_fn, vector_store_config
 
 
@@ -17,26 +19,19 @@ async def upload_doc(
     vector_store_type: str = 'faiss',
 ):
     doc_fname = file.filename
+    file_ext = os.path.splitext(doc_fname)[-1]
     contents = await file.read()
-    contents = contents.decode()
+    contents_buffer = io.BytesIO(contents)
 
-    headers_to_split_on = [
-        ("h1", "Header 1"),
-        ("h2", "Header 2"),
-        ("h3", "Header 3"),
-        ("h4", "Header 4"),
-        ("h5", "Header 5"),
-        ("table", 'table'),
-    ]
-
-    splits = split_html(
-        contents,
-        encoding='utf-8',
-        sections_to_split=headers_to_split_on,
+    data_splitter = DataSplitter(
+        contents_buffer,
+        file_ext=file_ext,
+        encoding="utf-8",
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         separators=["\n\n", "\n", ",", "."],
     )
+    splits = data_splitter()
 
     # store data to vector database
     if vector_store_type == "milvus":

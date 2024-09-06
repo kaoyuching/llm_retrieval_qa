@@ -53,6 +53,7 @@ def load_vector_db():
 
 def get_streaming_fn():
     vector_db = load_vector_db()
+    similarity_score_threshold = None
 
     if model_config["format"] == "hf":
         from transformers import AutoTokenizer
@@ -84,7 +85,7 @@ def get_streaming_fn():
             prompt_template_fn,
             top_k=top_k,
             return_source_documents=False,
-            similarity_score_threshold=None,
+            similarity_score_threshold=similarity_score_threshold,
             model_kwargs=model_kwargs,
             device=settings.device,
         )
@@ -98,7 +99,7 @@ def get_streaming_fn():
             streamer_cfg=model_config["streamer"],
             top_k=top_k,
             return_source_documents=False,
-            similarity_score_threshold=None,
+            similarity_score_threshold=similarity_score_threshold,
             model_kwargs=model_config["generate"],
         )
     return qa_streaming
