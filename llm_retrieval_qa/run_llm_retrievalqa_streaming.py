@@ -6,46 +6,32 @@ warnings.filterwarnings("ignore")
 
 from llm_retrieval_qa.configs import settings, model_config, vector_store_config,\
     get_prompt_template, get_embedding_fn
-from llm_retrieval_qa.splitter import split_html
+from llm_retrieval_qa.splitter import DataSplitter
 from llm_retrieval_qa.pipeline.model_loader import load_model
 
 
-def load_doc_data(settings):
-    with open(settings.doc_file_name, 'r', encoding='utf-8') as f:
-        data = f.read()
-    return data
-
-doc_fname = os.path.basename(settings.doc_file_name)
-html_doc = load_doc_data(settings)
-
 llm_model_runtime_kwargs = model_config["runtime"]
-
-
-headers_to_split_on = [
-    ("h1", "Header 1"),
-    ("h2", "Header 2"),
-    ("h3", "Header 3"),
-    ("h4", "Header 4"),
-    ("h5", "Header 5"),
-    ("table", 'table'),
-]
 
 chunk_size = 500 # 1000
 chunk_overlap = 30 # 50
-splits = split_html(
-    html_doc,
-    encoding='utf-8',
-    sections_to_split=headers_to_split_on,
+
+file_ext = os.path.splitext(settings.doc_file_name)[-1]
+data_splitter = DataSplitter(
+    settings.doc_file_name,
+    file_ext=file_ext,
+    encoding="utf-8",
     chunk_size=chunk_size,
     chunk_overlap=chunk_overlap,
     separators=["\n\n", "\n", ",", "."],
 )
+splits = data_splitter()
 
 
 embedding_fn = get_embedding_fn(model_config["embedding_cfgs"])
 
 
 # vector store
+doc_fname = os.path.basename(settings.doc_file_name)
 if vector_store_config.type == "milvus":
     from llm_retrieval_qa.vector_store.milvus import DbMilvus
 
