@@ -21,8 +21,12 @@ Example data are from:
 2. SQLAlchemy document: [https://docs.sqlalchemy.org/en/20/core/sqlelement.html](https://docs.sqlalchemy.org/en/20/core/sqlelement.html)
 3. Learn german: [https://www.studying-in-germany.org/learn-german/](https://www.studying-in-germany.org/learn-german/)
 
-#### Get `pdf` data
-TODO
+## Acceptable data file formats
+- [x] html
+- [x] pdf
+- [x] txt
+- [x] json
+- [] doc, docx
 
 
 ## Export model to onnx format
@@ -96,6 +100,9 @@ VECTOR_STORE__URI="http://localhost:19530"
 VECTOR_STORE__DB_NAME="docs_db"
 VECTOR_STORE__COLLECTION="data_collection"
 
+#VECTOR_STORE__TYPE="faiss"
+#VECTOR_STORE__URI="faiss_db.pkl"
+
 EMBEDDING_MODEL_TYPE="onnx"
 MODEL_NAME="llama3.1-gguf"
 QUANTIZATION="false"
@@ -107,3 +114,12 @@ EXAMPLE_QUESTION_FILE="./example_questions.txt"
 ```
 
 2. Run file `./llm_retrieval_qa/run_llm_retrievalqa.py`
+
+
+## Demo
+1. Setup `.env`
+2. Run server
+
+```=shell
+$ uvicorn api.main:app --host 0.0.0.0 --port 8005
+```
