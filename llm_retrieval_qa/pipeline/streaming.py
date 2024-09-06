@@ -107,11 +107,11 @@ class LlamaCppStreamer():
         for token in self.llm_model.generate(input_tokens, **gen_kwargs):
             if llama_cpp.llama_token_is_eog(self.llm_model._model.model, token) or token in self.stop_tokens or return_tokens >= max_tokens:
                 text = self.llm_model.detokenize([], prev_tokens=input_tokens)
-                self.streamer.put(text.decode("utf-8"))
+                self.streamer.put(text.decode("utf-8", "ignore"))
                 break
             text = self.llm_model.detokenize([token], prev_tokens=input_tokens)
             return_tokens += 1
-            self.streamer.put(text.decode("utf-8"))
+            self.streamer.put(text.decode("utf-8", "ignore"))
         self.streamer.end()
 
     def __call__(self, question):
