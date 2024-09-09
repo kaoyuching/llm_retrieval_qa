@@ -86,6 +86,7 @@ def get_streaming_fn():
             top_k=top_k,
             return_source_documents=False,
             similarity_score_threshold=similarity_score_threshold,
+            search_extend_num=2,
             model_kwargs=model_kwargs,
             device=settings.device,
         )
@@ -100,6 +101,7 @@ def get_streaming_fn():
             top_k=top_k,
             return_source_documents=False,
             similarity_score_threshold=similarity_score_threshold,
+            search_extend_num=2,
             model_kwargs=model_config["generate"],
         )
     return qa_streaming
