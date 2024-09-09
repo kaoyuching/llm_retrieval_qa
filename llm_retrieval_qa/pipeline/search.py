@@ -65,5 +65,4 @@ def similarity_search(vector_db, question, top_k: int = 10, threshold=None, exte
         doc_str, contexts, scores = similarity_search_milvus(vector_db, question, top_k=top_k, threshold=threshold, extend_num=extend_num)
     else:
         doc_str, contexts, scores = similarity_search_faiss(vector_db, question, top_k=top_k, threshold=threshold, extend_num=extend_num)
-    print(doc_str)
     return doc_str, contexts, scores
