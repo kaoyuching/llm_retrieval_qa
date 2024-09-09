@@ -3,6 +3,8 @@ import io
 from io import IOBase
 from typing import List, Tuple, Optional, Union
 import json
+import copy
+import numpy as np
 
 from pdfminer.high_level import extract_text
 from pdfminer.high_level import extract_pages
@@ -65,6 +67,7 @@ class DataSplitter():
         chunk_size: int = 500,
         chunk_overlap: int = 50,
         separators: List[str] = ["\n\n", "\n", ",", "."],
+        keyword_extract: bool = False,
     ):
         self.file_src = file_src
         # get file ext
@@ -75,6 +78,11 @@ class DataSplitter():
             chunk_overlap=chunk_overlap,
             separators=separators,
         )
+
+        self.kw_model = None
+        if keyword_extract:
+            from keybert import KeyBERT
+            self.kw_model = KeyBERT()
 
     def load_data(self, file_src: Union[str, IOBase]) -> List[Document]:
         if self.ext == ".html":
@@ -89,6 +97,9 @@ class DataSplitter():
             data = self._load_json(file_src)
         else:
             raise ValueError("Invalid file format.")
+
+        if self.kw_model:
+            data = self.keyword_extraction(data, top_n=10)
         return data
 
     def split(self, data: List[Document]):
@@ -163,6 +174,19 @@ class DataSplitter():
         else:
             docs = [Document(page_content=json.dumps(data))]
         return docs
+
+    def keyword_extraction(self, docs: List[Document], top_n: int = 10) -> List[Document]:
+        new_docs = copy.deepcopy(docs)
+        for i, _doc in enumerate(docs):
+            doc = _doc.page_content
+            keywords = self.kw_model.extract_keywords(doc, top_n=top_n)
+            keywords = [x[0] for x in keywords]
+            new_docs[i].metadata = {**new_docs[i].metadata, 'keywords': keywords}
+
+        # unique, counts = np.unique(res, return_counts=True)
+        # summary = list(zip(unique, counts))
+        # summary = sorted(summary, key=lambda x: x[1], reverse=True)
+        return new_docs
 
     def __call__(self):
         data = self.load_data(self.file_src)
