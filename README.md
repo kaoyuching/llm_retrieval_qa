@@ -26,7 +26,7 @@ Example data are from:
 - [x] pdf
 - [x] txt
 - [x] json
-- [] doc, docx
+- [ ] doc, docx
 
 
 ## Export model to onnx format
