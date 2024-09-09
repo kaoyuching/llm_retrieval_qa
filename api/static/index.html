@@ -124,7 +124,7 @@
       console.log(chooseFile.files[0]);
       const formdata = new FormData();
       formdata.append('file', chooseFile.files[0]);
-      var url = '/upload_doc/?chunk_size=500&chunk_overlap=30&vector_store_type=faiss';
+      var url = '/upload_doc/?chunk_size=500&chunk_overlap=30';
 
       fetch(url, {
         body: formdata,
