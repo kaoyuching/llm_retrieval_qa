@@ -16,7 +16,6 @@ async def upload_doc(
     file: UploadFile = File(...),
     chunk_size: int = 500,
     chunk_overlap: int = 30,
-    vector_store_type: str = 'faiss',
 ):
     doc_fname = file.filename
     file_ext = os.path.splitext(doc_fname)[-1]
@@ -34,7 +33,7 @@ async def upload_doc(
     splits = data_splitter()
 
     # store data to vector database
-    if vector_store_type == "milvus":
+    if vector_store_config.type == "milvus":
         from llm_retrieval_qa.vector_store.milvus import DbMilvus
 
         vector_db = DbMilvus(
@@ -49,7 +48,7 @@ async def upload_doc(
         exist_docs = vector_db.get(f'doc_fname == "{doc_fname}"')
         if len(exist_docs) == 0:
             _ = vector_db.create(texts, doc_fname=doc_fname)
-    elif vector_store_type == "faiss":
+    elif vector_store_config.type == "faiss":
         from llm_retrieval_qa.vector_store.faiss import DbFAISS
 
         vector_db = DbFAISS(embedding_fn, vector_store_config.uri, normalize=True)
