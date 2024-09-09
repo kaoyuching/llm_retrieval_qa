@@ -84,8 +84,10 @@ class DbFAISS():
             self.doc_fname_to_docid[doc_fname] = self.doc_fname_to_docid[doc_fname].extend(list(docid_to_doc.keys()))
         return {'update': len(texts), 'docid_to_doc': docid_to_doc, 'index_to_docid': index_to_docid}
 
-    def get_by_id(self, idx: int) -> np.ndarray:
-        return self.index.reconstruct(idx)
+    def get_by_id(self, idx: int) -> Dict:
+        emb = self.index.reconstruct(idx)
+        text = self.docid_to_doc[self.index_to_docid[idx]]
+        return {'id': idx, 'text': text, 'embedding': emb}
 
     def similarity_search_with_score(self, search_text: str, k: Optional[int] = None) -> List[Dict]:
         r"""
@@ -143,6 +145,10 @@ class DbFAISS():
         # remove
         self.index.remove_ids(np.array(ids))
         return remove_docs
+
+    @property
+    def ntotal(self):
+        return self.index.ntotal
 
     def _gen_uuid(self, n: int, exist_ids: Optional[Set] = None):
         if len(exist_ids) == 0 or exist_ids is None:
