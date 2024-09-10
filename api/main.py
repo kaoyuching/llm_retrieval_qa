@@ -31,6 +31,8 @@ prompt_template_fn, full_prompt_template = get_prompt_template(model_config["pro
 # load model
 model = load_model(model_config, settings.quantization, settings.device)
 top_k = settings.search_topk
+reranking = settings.reranking
+rerank_topk = settings.rerank_topk
 
 
 # load vector db
@@ -87,6 +89,8 @@ def get_streaming_fn():
             return_source_documents=False,
             similarity_score_threshold=similarity_score_threshold,
             search_extend_num=2,
+            reranking=reranking,
+            rerank_topk=rerank_topk,
             model_kwargs=model_kwargs,
             device=settings.device,
         )
@@ -102,6 +106,8 @@ def get_streaming_fn():
             return_source_documents=False,
             similarity_score_threshold=similarity_score_threshold,
             search_extend_num=2,
+            reranking=reranking,
+            rerank_topk=rerank_topk,
             model_kwargs=model_config["generate"],
         )
     return qa_streaming

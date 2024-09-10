@@ -36,6 +36,8 @@ class Settings(BaseSettings):
     quantization: bool = False
     device: str = "cpu"
     search_topk: int = 10
+    reranking: bool = False
+    rerank_topk: int = 5
     timer: bool = False
     example_question_file: Optional[str] = None
 
