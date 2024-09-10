@@ -50,6 +50,8 @@ class QAHFStreamer():
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
         search_extend_num: int = 0,
+        reranking: bool = False,
+        rerank_topk: int = 5,
         model_kwargs: Dict = {'max_new_tokens': 2048},
         device: str = "cpu",
     ):
@@ -64,11 +66,13 @@ class QAHFStreamer():
         self.return_source_documents = return_source_documents
         self.threshold = similarity_score_threshold
         self.search_extend_num = search_extend_num
+        self.reranking = reranking
+        self.rerank_topk = rerank_topk
         self.model_kwargs = model_kwargs
         self.device = device
 
     def __call__(self, question):
-        doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold, extend_num=self.search_extend_num)
+        contexts, _ = similarity_search(self.vector_db, question, self.top_k, self.threshold, extend_num=self.search_extend_num, reranking=self.reranking, rerank_topk=self.rerank_topk)
         input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
 
         inputs = self.tokenizer([input_prompt], return_tensors="pt").to(self.device)
@@ -89,6 +93,8 @@ class LlamaCppStreamer():
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
         search_extend_num: int = 0,
+        reranking: bool = False,
+        rerank_topk: int = 5,
         model_kwargs: Dict = {'max_tokens': 2048},
     ):
         self.llm_model = llm_model
@@ -99,6 +105,8 @@ class LlamaCppStreamer():
         self.return_source_documents = return_source_documents
         self.threshold = similarity_score_threshold
         self.search_extend_num = search_extend_num
+        self.reranking = reranking
+        self.rerank_topk = rerank_topk
         self.model_kwargs = {**model_kwargs}
         self.max_tokens = self.model_kwargs.pop("max_tokens") if "max_tokens" in self.model_kwargs else 16
         stop = self.model_kwargs.pop("stop") if "stop" in self.model_kwargs else []
@@ -119,7 +127,7 @@ class LlamaCppStreamer():
         self.streamer.end()
 
     def __call__(self, question):
-        doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, threshold=self.threshold, extend_num=self.search_extend_num)
+        contexts, _ = similarity_search(self.vector_db, question, self.top_k, threshold=self.threshold, extend_num=self.search_extend_num, reranking=self.reranking, rerank_topk=self.rerank_topk)
         input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
 
         input_tokens = self.llm_model.tokenize(input_prompt.encode("utf-8"), add_bos=False, special=True)

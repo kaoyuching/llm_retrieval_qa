@@ -15,6 +15,8 @@ class QAChain():
         top_k: int = 10,
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
+        reranking: bool = False,
+        rerank_topk: int = 5,
     ):
         self.llm_model = llm_model
         self.vector_db = vector_db
@@ -22,16 +24,18 @@ class QAChain():
         self.top_k = top_k
         self.return_source_documents = return_source_documents
         self.threshold = similarity_score_threshold
+        self.reranking = reranking
+        self.rerank_topk = rerank_topk
 
     @time_it
     def __call__(self, question):
-        doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold)
+        contexts, _ = similarity_search(self.vector_db, question, self.top_k, self.threshold, self.reranking, rerank_topk=self.rerank_topk)
         input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
 
         res = self.llm_model.invoke(input_prompt)
         output = {'query': question, 'result': res}
         if self.return_source_documents:
-            output['source_documents'] = doc_str
+            output['source_documents'] = contexts
         return output
 
 
@@ -41,13 +45,13 @@ class QAChainHF(QAChain):
 
     @time_it
     def __call__(self, question):
-        doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold)
+        contexts, _ = similarity_search(self.vector_db, question, self.top_k, self.threshold, self.reranking, rerank_topk=self.rerank_topk)
         input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
 
         res = self.llm_model(input_prompt)
         output = {'query': question, 'result': res[0]["generated_text"]}
         if self.return_source_documents:
-            output['source_documents'] = doc_str
+            output['source_documents'] = contexts
         return output
 
 
@@ -60,6 +64,8 @@ class QAChainCPP():
         top_k: int = 10,
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
+        reranking: bool = False,
+        rerank_topk: int = 5,
         model_kwargs: Dict = {"echo": False},
     ):
         self.llm_model = llm_model
@@ -68,15 +74,17 @@ class QAChainCPP():
         self.top_k = top_k
         self.return_source_documents = return_source_documents
         self.threshold = similarity_score_threshold
+        self.reranking = reranking
+        self.rerank_topk = rerank_topk
         self.model_kwargs = model_kwargs
 
     @time_it
     def __call__(self, question):
-        doc_str, contexts, scores = similarity_search(self.vector_db, question, self.top_k, self.threshold)
+        contexts, _ = similarity_search(self.vector_db, question, self.top_k, self.threshold, self.reranking, rerank_topk=self.rerank_topk)
         input_prompt = get_qa_prompt(self.prompt_template, question, contexts)
 
         res = self.llm_model(input_prompt, **self.model_kwargs)
         output = {'query': question, 'result': res["choices"][0]["text"]}
         if self.return_source_documents:
-            output['source_documents'] = doc_str
+            output['source_documents'] = contexts
         return output
