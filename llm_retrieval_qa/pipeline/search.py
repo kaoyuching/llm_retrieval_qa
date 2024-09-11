@@ -1,4 +1,4 @@
-from llm_retrieval_qa.pipeline.reranking import ReRanking
+from typing import Optional
 
 
 def similarity_search_faiss(vector_db, question, top_k: int = 10, threshold=None, extend_num: int = 0):
@@ -60,7 +60,7 @@ def similarity_search(
     top_k: int = 10,
     threshold=None,
     extend_num: int = 0,
-    reranking: bool = False,
+    reranking: Optional = None,
     rerank_topk: int = 5,
 ):
     if rerank_topk > top_k:
@@ -75,10 +75,7 @@ def similarity_search(
     # reranking: https://www.rungalileo.io/blog/mastering-rag-how-to-select-a-reranking-model
     _tmp = {x: i for x, i in zip(contexts, search_ids)}
     if reranking:
-        reranking = ReRanking()
         res = reranking.rank([question], contexts)[:rerank_topk]
         contexts = [x["text"] for x in res]
         search_ids = [_tmp[x] for x in contexts]
-    print(contexts, flush=True)
-    print(len(contexts), flush=True)
     return contexts, search_ids

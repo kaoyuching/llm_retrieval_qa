@@ -40,6 +40,46 @@ embedding_type_config = {
 }
 
 
+reranking_type_config = {
+    "llama2": {
+        "onnx": {
+            "__class_name__": "ONNXReranking",
+            "model_path": "../models/colbertv2.0/model.onnx",
+            "tokenizer_path": "../models/colbertv2.0/tokenizer.json",
+            "tokenizer_cfg_path": "../models/colbertv2.0/tokenizer_config.json",
+        },
+        "hf": {
+            "__class_name__": "HFReranking",
+            "model_path": "colbert-ir/colbertv2.0",
+        },
+    },
+    "llama3": {
+        "onnx": {
+            "__class_name__": "ONNXReranking",
+            "model_path": "../models/colbertv2.0/model.onnx",
+            "tokenizer_path": "../models/colbertv2.0/tokenizer.json",
+            "tokenizer_cfg_path": "../models/colbertv2.0/tokenizer_config.json",
+        },
+        "hf": {
+            "__class_name__": "HFReranking",
+            "model_path": "colbert-ir/colbertv2.0",
+        },
+    },
+    "phi3": {
+        "onnx": {
+            "__class_name__": "ONNXReranking",
+            "model_path": "../models/colbertv2.0/model.onnx",
+            "tokenizer_path": "../models/colbertv2.0/tokenizer.json",
+            "tokenizer_cfg_path": "../models/colbertv2.0/tokenizer_config.json",
+        },
+        "hf": {
+            "__class_name__": "HFReranking",
+            "model_path": "colbert-ir/colbertv2.0",
+        },
+    }
+}
+
+
 model_type_config = {
     "llama2": {
         "prompt_template": {
@@ -292,4 +332,5 @@ def get_model_config(model_name):
     model_type = config['model_type']
     config['prompt_template'] = {**model_type_config[model_type]["prompt_template"], **config.get('prompt_template', {})}
     config['embedding_cfgs'] = {**embedding_type_config[model_type]}
+    config['reranking_cfgs'] = {**reranking_type_config[model_type]}
     return config

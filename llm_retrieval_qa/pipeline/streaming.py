@@ -50,7 +50,7 @@ class QAHFStreamer():
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
         search_extend_num: int = 0,
-        reranking: bool = False,
+        reranking: Optional = None,
         rerank_topk: int = 5,
         model_kwargs: Dict = {'max_new_tokens': 2048},
         device: str = "cpu",
@@ -93,7 +93,7 @@ class LlamaCppStreamer():
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
         search_extend_num: int = 0,
-        reranking: bool = False,
+        reranking: Optional = None,
         rerank_topk: int = 5,
         model_kwargs: Dict = {'max_tokens': 2048},
     ):

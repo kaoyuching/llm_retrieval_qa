@@ -15,7 +15,7 @@ class QAChain():
         top_k: int = 10,
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
-        reranking: bool = False,
+        reranking: Optional = None,
         rerank_topk: int = 5,
     ):
         self.llm_model = llm_model
@@ -64,7 +64,7 @@ class QAChainCPP():
         top_k: int = 10,
         return_source_documents: bool = False,
         similarity_score_threshold: Optional[float] = None,
-        reranking: bool = False,
+        reranking: Optional = None,
         rerank_topk: int = 5,
         model_kwargs: Dict = {"echo": False},
     ):

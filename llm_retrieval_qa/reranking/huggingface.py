@@ -4,7 +4,13 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel
 
 
-class ReRanking():
+r"""
+reference: https://gist.github.com/virattt/b140fb4bf549b6125d53aa153dc53be6
+colBERT: https://huggingface.co/colbert-ir/colbertv2.0
+"""
+
+
+class HFReranking():
     def __init__(self, model_name: str = "colbert-ir/colbertv2.0"):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name)

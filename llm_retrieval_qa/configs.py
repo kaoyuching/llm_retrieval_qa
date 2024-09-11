@@ -36,7 +36,9 @@ class Settings(BaseSettings):
     quantization: bool = False
     device: str = "cpu"
     search_topk: int = 10
+    search_extend_num: int = 0
     reranking: bool = False
+    reranking_model_type: Literal["onnx", "hf"] = "hf"
     rerank_topk: int = 5
     timer: bool = False
     example_question_file: Optional[str] = None
@@ -72,9 +74,20 @@ def get_embedding_fn(embedding_cfgs):
     return embedding_fn
 
 
+def get_reranking(reranking_cfgs):
+    from llm_retrieval_qa.reranking import get_reranking_class
+
+    reranking_kwargs = {k: v for k, v in reranking_cfgs.items() if k not in ["__class_name__"]}
+    _reranking_fn = get_reranking_class(reranking_cfgs["__class_name__"])
+    reranking_fn = _reranking_fn(**reranking_kwargs)
+    return reranking_fn
+
+
 settings = Settings()
 # get model config
 model_config = get_model_config(settings.model_name)
 embedding_type = settings.embedding_model_type
 model_config["embedding_cfgs"] = {**model_config["embedding_cfgs"][embedding_type]}
+reranking_type = settings.reranking_model_type
+model_config["reranking_cfgs"] = {**model_config["reranking_cfgs"][reranking_type]}
 vector_store_config = settings.vector_store

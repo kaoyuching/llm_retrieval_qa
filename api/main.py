@@ -9,7 +9,7 @@ from starlette.websockets import WebSocketDisconnect
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 
 from llm_retrieval_qa.configs import settings, model_config, vector_store_config,\
-    get_prompt_template, get_embedding_fn
+    get_prompt_template, get_embedding_fn, get_reranking
 from llm_retrieval_qa.splitter import split_html
 from llm_retrieval_qa.pipeline.model_loader import load_model
 from api.routers import router
@@ -30,8 +30,16 @@ prompt_template_fn, full_prompt_template = get_prompt_template(model_config["pro
 
 # load model
 model = load_model(model_config, settings.quantization, settings.device)
+
+# similarity search
 top_k = settings.search_topk
-reranking = settings.reranking
+search_extend_num = settings.search_extend_num
+
+# reranking
+if settings.reranking:
+    reranking = get_reranking(model_config["reranking_cfgs"])
+else:
+    reranking = None
 rerank_topk = settings.rerank_topk
 
 
@@ -88,7 +96,7 @@ def get_streaming_fn():
             top_k=top_k,
             return_source_documents=False,
             similarity_score_threshold=similarity_score_threshold,
-            search_extend_num=2,
+            search_extend_num=search_extend_num,
             reranking=reranking,
             rerank_topk=rerank_topk,
             model_kwargs=model_kwargs,
@@ -105,7 +113,7 @@ def get_streaming_fn():
             top_k=top_k,
             return_source_documents=False,
             similarity_score_threshold=similarity_score_threshold,
-            search_extend_num=2,
+            search_extend_num=search_extend_num,
             reranking=reranking,
             rerank_topk=rerank_topk,
             model_kwargs=model_config["generate"],
