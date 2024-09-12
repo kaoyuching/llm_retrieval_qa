@@ -33,21 +33,23 @@ class ONNXReranking():
         str_type = re.search('(?<=tensor\()\w*', type_name).group(0)
         return self._tensor_type_mapping[str_type]
 
-    def cosine_similarity(self, x1, x2, dim: int = 1):
-        inner = np.matmul(x1, x2)
-        inner = np.squeeze(inner, axis=2)
+    def cosine_similarity(self, x1, x2, dim: int = 1, eps: float = 1e-8):
+        _mag_x1 = np.sum(x1 ** 2, axis=dim, keepdims=True)
+        _mag_x2 = np.sum(x2 ** 2, axis=dim, keepdims=True)
+        
+        mag_x1 = np.sqrt(np.clip(_mag_x1, eps, None))
+        mag_x2 = np.sqrt(np.clip(_mag_x2, eps, None))
 
-        mag_x1 = np.sqrt(np.sum(x1 ** 2, axis=dim))
-        mag_x2 = np.sqrt(np.sum(x2 ** 2, axis=dim))
-        return inner / (mag_x1 * mag_x2)
+        norm_x1 = x1 / mag_x1
+        norm_x2 = x2 / mag_x2
+        return np.sum(norm_x1 * norm_x2, axis=dim)
 
     def maxsim(self, query_emb: np.ndarray, doc_emb: np.ndarray):
         query_emb = np.expand_dims(query_emb, axis=2)  # (bs, q_len, emb_size) -> (bs, q_len, 1, emb_size)
         doc_emb = np.expand_dims(doc_emb, axis=1)  # (bs, doc_len, emb_size) -> (bs, 1, doc_len, emb_size)
-        doc_emb = np.transpose(doc_emb, axes=(0, 1, 3, 2))
 
         # cosine similarity
-        sim_matrix = self.cosine_similarity(query_emb, doc_emb, dim=None)  # (bs, q_len, doc_len)
+        sim_matrix = self.cosine_similarity(query_emb, doc_emb, dim=-1)  # (bs, q_len, doc_len)
         max_sim_scores = np.max(sim_matrix, axis=2)
         arg_max_sim = np.mean(max_sim_scores, axis=1)
         return arg_max_sim
