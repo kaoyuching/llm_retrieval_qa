@@ -128,7 +128,8 @@ class PromptLlama3(PromptBase):
                 full_prompt_template += ROLE_USER + message.content + self.E_INPUT
             elif message.role == "assistant":
                 full_prompt_template += ROLE_ASST + message.content + self.E_INPUT
-        full_prompt_template += ROLE_ASST
+        if messages[-1].role == "user":
+            full_prompt_template += ROLE_ASST
 
         input_variables = re.findall('{(\w+)}', full_prompt_template)
 
@@ -178,7 +179,8 @@ class PromptPhi3(PromptBase):
                 full_prompt_template += self.B_ROLE + message.content + self.END
             elif message.role == "assistant":
                 full_prompt_template += self.B_ASST + message.content + self.END
-        full_prompt_template += self.B_ASST
+        if messages[-1].role == "user":
+            full_prompt_template += self.B_ASST
 
         input_variables = re.findall('{(\w+)}', full_prompt_template)
 
